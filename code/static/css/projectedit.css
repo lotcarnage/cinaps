@@ -1,0 +1,54 @@
+body {
+    background-color: #808080;
+}
+
+h2 {
+    background-color: #236;
+    color: #fff;
+    margin: 0;
+    text-align: center;
+}
+
+div#addtaskform {
+    background-color: #236;
+    width: fit-content;
+    text-align: center;
+    width: 16em;
+    padding-left: 1em;
+    padding-right: 1em;
+    border-radius: 8px;
+}
+
+div#addtaskform p {
+    margin: 2px;
+}
+
+button#addtask {
+    color: white;
+    background-color: #3b9;
+    margin: 10px auto;
+    border: 0;
+    width: 200px;
+    height: 3em;
+    outline: none;
+    text-align: center;
+    border-radius: 25px;
+}
+
+div.taskpanel {
+    background-color: #666;
+    border-radius: 10px;
+    width: 18em;
+    height: 70vh;
+    overflow: scroll;
+}
+
+div.taskcard {
+    background-color: #fff;
+    border-radius: 8px;
+    margin: 4px;
+    width: 16em;
+    height: 4em;
+    filter: drop-shadow(2px 2px 2px rgba(0.2, 0.2, 0.2, 0.2));
+    align-items: start;
+}

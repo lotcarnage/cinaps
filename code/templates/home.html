@@ -1,16 +1,20 @@
 {% extends 'base.html' %}
-{% block body %}
-<form action="/addtask" method="post">
-	<p><input type="text" name="subject"></p>
-	<p><input type="text" name="description"></p>
-	<button id="login_button" type="submit">タスク追加</button>
-</form>
+{% block head %}
+<link rel="stylesheet" href="/static/css/basic.css" />
+<script>
 
-<table>
-	{% for task in tasks %}
-	<tr>
-		<td id="task_{{task.id}}">{{ task.subject }} </td>
-	</tr>
-	{% endfor %}
-</table>
+</script>
+{% endblock %}
+
+{% block body %}
+<p><a href="/projects">プロジェクト一覧</a></p>
+
+{% for task in tasks %}
+<div class="taskcard" id="task_{{task.id}}">
+    {{ task.subject }}
+</div>
+{% endfor %}
+
+
+
 {% endblock %}

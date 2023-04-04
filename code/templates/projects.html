@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block head %}
+<title>Projects</title>
+<link rel="stylesheet" href="/static/css/projects.css" />
+{% endblock %}
+
+{% block body %}
+<p><a href="/home">Home</a></p>
+
+<div>
+    <form action="/addproject" method="post">
+        <p>
+            <input type="text" name="project_name">
+            <button id="login_button" type="submit">プロジェクト追加</button>
+        </p>
+    </form>
+</div>
+
+<div class="frame">
+    {% for project in projects %}
+    <div class="projectboard" id="project_{{project.id}}">
+        <a href="/projectedit?id={{project.id}}">
+            <h3>{{ project.name }}</h3>
+        </a>
+        <p>{{ project.create_at }}</p>
+        <p>タスク数: {{ project.task_count }}</p>
+        <p>作業進捗率</p>
+    </div>
+    {% endfor %}
+</div>
+
+
+{% endblock %}

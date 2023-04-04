@@ -1,0 +1,33 @@
+body {
+    background-color: #808080;
+}
+
+div.frame {
+    background-color: #666;
+    border-radius: 10px;
+    width: 78vw;
+    height: 90vh;
+    display: flex;
+    flex-wrap: wrap;
+    overflow: scroll;
+}
+
+div.projectboard {
+    background-color: #fff;
+    border-radius: 8px;
+    width: 24vw;
+    max-width: 24vw;
+    height: 12em;
+    margin: 4px;
+    padding: 8px;
+    filter: drop-shadow(2px 2px 2px rgba(0.2, 0.2, 0.2, 0.2));
+    flex: auto;
+}
+
+div.projectboard h3 {
+    margin: 2px;
+}
+
+div.projectboard p {
+    margin: 2px;
+}

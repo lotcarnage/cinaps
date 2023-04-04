@@ -1,5 +1,10 @@
 {% extends 'base.html' %}
 
+{% block head %}
+<title>Index</title>
+<link rel="stylesheet" href="/static/css/basic.css" />
+{% endblock %}
+
 {% block body %}
 <form id="login_form" name="login_form" method="post" action="/login">
     <div class="login_form_top">
