@@ -8,6 +8,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
 db = flask_sqlalchemy.SQLAlchemy(app)
 
 User = models.LoadModel_User(db)
+Task = models.LoadModel_Task(db)
 
 
 def _try_login(user_id: str, password: str) -> bool:
@@ -41,7 +42,25 @@ def home():
     print(session_id)
     if session_id is None:
         return flask.redirect('/')
-    return flask.render_template('home.html')
+    tasks = Task.query.all()
+    return flask.render_template('home.html', tasks=tasks)
+
+
+@app.route('/addtask', methods=['post'])
+def addtask():
+
+    subject = flask.request.form.get('subject')
+    description = flask.request.form.get('description')
+    new_task = Task(subject=subject, description=description)
+    db.session.add(new_task)
+    db.session.commit()
+    tasks = Task.query.all()
+    response_html = flask.render_template('home.html', tasks=tasks)
+    response = flask.make_response(response_html)
+    max_age = 10  # 10 sec
+    expires = int(datetime.datetime.now().timestamp()) + max_age
+    response.set_cookie('session_id', value='hogehoge', max_age=max_age, expires=expires, path='/', secure=None, httponly=False)
+    return flask.redirect('/home', Response=response)
 
 
 def _init_db():
