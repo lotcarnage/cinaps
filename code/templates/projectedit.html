@@ -6,13 +6,23 @@
 
 {% block body %}
 <p><a href="/projects">Projects</a></p>
-<h2> {{project.name}} </h2>
+<h2> {{project.display_name}} </h2>
 
 <div id="addtaskform">
     <form id="addtask" action="/addtask" method="post">
         <input type="id" name="project_id" value="{{ project.id }}" hidden>
         <p><input type="text" name="subject"></p>
         <p><input type="text" name="description"></p>
+        <select name="asinged_member_id" size="1">
+            {% for member in members %}
+            <option value="{{member.id}}">{{ member.display_name }}</option>
+            {% endfor %}
+        </select>
+        <select name="reviewer_id" size="1">
+            {% for member in members %}
+            <option value="{{member.id}}">{{ member.display_name }}</option>
+            {% endfor %}
+        </select>
         <button id="addtask" type="submit">タスク追加</button>
     </form>
 </div>

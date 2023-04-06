@@ -2,6 +2,15 @@ body {
     background-color: #808080;
 }
 
+div#addproject {
+    background-color: #276;
+    border-radius: 8px;
+}
+
+div#addproject p {
+    margin: 2px;
+}
+
 div.frame {
     background-color: #666;
     border-radius: 10px;
