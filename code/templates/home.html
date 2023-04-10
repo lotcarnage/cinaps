@@ -8,6 +8,9 @@
 
 {% block body %}
 <p><a href="/projects">プロジェクト一覧</a></p>
+<p><a href="/calendar">カレンダー</a></p>
+
+{{ member.display_name }}
 
 {% for task in tasks %}
 <div class="taskcard" id="task_{{task.id}}">

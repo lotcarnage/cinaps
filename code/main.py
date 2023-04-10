@@ -8,14 +8,10 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
 db = flask_sqlalchemy.SQLAlchemy(app)
 
 Member = models.LoadModel_Member(db)
+Fiscal = models.LoadModel_Fiscal(db)
 Project = models.LoadModel_Project(db)
 Task = models.LoadModel_Task(db)
 WorkTime = models.LoadModel_WorkTime(db)
-
-
-def _try_login(login_name: str, password: str) -> bool:
-    user = Member.query.filter_by(login_name=login_name, password=password).first()
-    return user is not None
 
 
 @app.route('/', methods=['get'])
@@ -27,23 +23,27 @@ def index():
 def login():
     login_name = flask.request.form.get('login_name')
     password = flask.request.form.get('password')
-    if _try_login(login_name, password) is False:
+    member = Member.query.filter_by(login_name=login_name, password=password).first()
+    if member is None:
         return flask.redirect('/')
     response = flask.make_response(flask.redirect(flask.url_for('home')))
     max_age = 60  # 10 sec
     expires = int(datetime.datetime.now().timestamp()) + max_age
     response.set_cookie('session_id', value='hogehoge', max_age=max_age, expires=expires, secure=None, httponly=False)
+    response.set_cookie('member_id', value=str(member.id), max_age=max_age, expires=expires, secure=None, httponly=False)
     return response
 
 
 @app.route('/home', methods=['get'])
 def home():
     session_id = flask.request.cookies.get('session_id')
+    member_id = flask.request.cookies.get('member_id')
     if session_id is None:
         return flask.redirect('/')
+    member = Member.query.filter_by(id=member_id).first()
     projects = Project.query.all()
     tasks = Task.query.all()
-    return flask.render_template('home.html', projects=projects, tasks=tasks)
+    return flask.render_template('home.html', member=member, projects=projects, tasks=tasks)
 
 
 @app.route('/projects', methods=['get'])
@@ -81,10 +81,51 @@ def addtask():
     project_id = flask.request.form.get('project_id')
     subject = flask.request.form.get('subject')
     description = flask.request.form.get('description')
-    new_task = Task(subject=subject, description=description, parent_project_id=project_id)
+    asigned_member_id = flask.request.form.get('asigned_member_id')
+    new_task = Task(subject=subject, description=description, parent_project_id=project_id, asigned_member_id=asigned_member_id)
+    print(new_task)
     db.session.add(new_task)
     db.session.commit()
     return flask.redirect(f'/projectedit?id={project_id}')
+
+
+@app.route('/calendar', methods=['get'])
+def calendar():
+    session_id = flask.request.cookies.get('session_id')
+    member_id = flask.request.cookies.get('member_id')
+    if session_id is None:
+        return flask.redirect('/')
+    member = Member.query.filter_by(id=member_id).first()
+    tasks = Task.query.all()
+    today = datetime.datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
+    next_day = today + datetime.timedelta(days=1)
+    worktimes = WorkTime.query.filter_by(member_id=member.id).all()
+    worktimes = [worktime for worktime in worktimes if (today <= worktime.start_datetime < next_day) and (worktime.member_id == member_id)]
+    task_name_dict = {task.id: task.subject for task in tasks}
+    for worktime in worktimes:
+        worktime.task_name = task_name_dict[worktime.task_id]
+        worktime.start_time = worktime.start_datetime.time()
+    row_minute = 30
+    for i in range(24 * 60 // row_minute):
+        worktime_balnk = type('', (), {})()
+        time = (today + datetime.timedelta(minutes=row_minute * i)).time()
+        worktime_balnk.start_time = f'{time.hour:02}:{time.minute:02}'
+        worktime_balnk.task_name = 'blank'
+        worktimes.append(worktime_balnk)
+
+    my_tasks = [task for task in tasks if task.asigned_member_id == member.id]
+    return flask.render_template('calendar.html', tasks=my_tasks, worktimes=worktimes)
+
+
+@app.route('/addworktime', methods=['post'])
+def addworktime():
+    task_id = flask.request.form.get('task_id')
+    start_datetime = flask.request.form.get('start_datetime')
+    span_minute = flask.request.form.get('span_minute')
+    new_worktime = WorkTime(task_id=task_id, start_datetime=start_datetime, span_minute=span_minute)
+    db.session.add(new_worktime)
+    db.session.commit()
+    return flask.redirect('/calendar')
 
 
 def _init_db():

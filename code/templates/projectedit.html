@@ -13,7 +13,7 @@
         <input type="id" name="project_id" value="{{ project.id }}" hidden>
         <p><input type="text" name="subject"></p>
         <p><input type="text" name="description"></p>
-        <select name="asinged_member_id" size="1">
+        <select name="asigned_member_id" size="1">
             {% for member in members %}
             <option value="{{member.id}}">{{ member.display_name }}</option>
             {% endfor %}
