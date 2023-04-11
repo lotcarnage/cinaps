@@ -14,6 +14,32 @@ Task = models.LoadModel_Task(db)
 WorkTime = models.LoadModel_WorkTime(db)
 
 
+def _extract_date_str(dt: datetime.datetime):
+    return f'{dt.year:4}-{dt.month:02}-{dt.day:02}'
+
+
+def _load_tasks():
+    tasks = Task.query.all()
+    members = Member.query.all()
+    worktimes = WorkTime.query.all()
+    member_dict = {member.id: member for member in members}
+    task_sheduled_time_dict = {task.id: 0 for task in tasks}
+    task_progress_time_dict = {task.id: 0 for task in tasks}
+    now = datetime.datetime.now()
+    for worktime in worktimes:
+        if (worktime.start_datetime + datetime.timedelta(minutes=worktime.span_minute)) <= now:
+            task_progress_time_dict[worktime.task_id] += worktime.span_minute
+        task_sheduled_time_dict[worktime.task_id] += worktime.span_minute
+    for task in tasks:
+        if task.asigned_member_id in member_dict:
+            task.asigned_member_name = member_dict[task.asigned_member_id].display_name
+        else:
+            task.asigned_member_name = '未割り当て'
+        task.sheduled_time = task_sheduled_time_dict[task.id]
+        task.progress_time = task_progress_time_dict[task.id]
+    return tasks
+
+
 @app.route('/', methods=['get'])
 def index():
     return flask.render_template('index.html')
@@ -27,7 +53,7 @@ def login():
     if member is None:
         return flask.redirect('/')
     response = flask.make_response(flask.redirect(flask.url_for('home')))
-    max_age = 60  # 10 sec
+    max_age = 60 * 30  # 30 minute
     expires = int(datetime.datetime.now().timestamp()) + max_age
     response.set_cookie('session_id', value='hogehoge', max_age=max_age, expires=expires, secure=None, httponly=False)
     response.set_cookie('member_id', value=str(member.id), max_age=max_age, expires=expires, secure=None, httponly=False)
@@ -42,8 +68,9 @@ def home():
         return flask.redirect('/')
     member = Member.query.filter_by(id=member_id).first()
     projects = Project.query.all()
-    tasks = Task.query.all()
-    return flask.render_template('home.html', member=member, projects=projects, tasks=tasks)
+    tasks = _load_tasks()
+    my_asigned_tasks = [task for task in tasks if task.asigned_member_id == member.id]
+    return flask.render_template('home.html', member=member, projects=projects, tasks=my_asigned_tasks)
 
 
 @app.route('/projects', methods=['get'])
@@ -51,7 +78,15 @@ def projects():
     projects = Project.query.all()
     for project in projects:
         project.task_count = len(Task.query.filter_by(parent_project_id=project.id).all())
+    for project in projects:
+        project.start_date = _extract_date_str(project.start_date)
+        project.expected_finish_date = _extract_date_str(project.expected_finish_date)
     return flask.render_template('projects.html', projects=projects)
+
+
+@app.route('/newproject', methods=['get'])
+def newproject():
+    return flask.render_template('newproject.html')
 
 
 @app.route('/addproject', methods=['post'])
@@ -73,7 +108,9 @@ def projectedit():
     project = Project.query.filter_by(id=project_id).first()
     tasks = Task.query.filter_by(parent_project_id=project_id).all()
     members = Member.query.all()
-    return flask.render_template('projectedit.html', tasks=tasks, project=project, members=members)
+    tasks = _load_tasks()
+    tasks_in_project = [task for task in tasks if task.parent_project_id == int(project_id)]
+    return flask.render_template('projectedit.html', tasks=tasks_in_project, project=project, members=members)
 
 
 @app.route('/addtask', methods=['post'])

@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block head %}
+<title>Projects</title>
+<link rel="stylesheet" href="/static/css/basic.css" />
+<link rel="stylesheet" href="/static/css/projects.css" />
+{% endblock %}
+
+{% block body %}
+<p><a href="/home">Home</a></p>
+<p><a href="/projects">Projects</a></p>
+
+<div id="addproject">
+    <form action="/addproject" method="post">
+        <p> プリジェクト名：<input type="text" name="project_name"></p>
+        <p>プロジェクト開始日：<input type="date" name="start_date"></p>
+        <p>プロジェクト終了日：<input type="date" name="expected_finish_date"></p>
+        <button id="login_button" type="submit">プロジェクト追加</button>
+    </form>
+</div>
+
+
+
+{% endblock %}

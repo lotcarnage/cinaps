@@ -12,11 +12,15 @@
 
 {{ member.display_name }}
 
-{% for task in tasks %}
-<div class="taskcard" id="task_{{task.id}}">
-    {{ task.subject }}
+<div class="taskpanel">
+    {% for task in tasks %}
+    <div class="taskcard" id="task_{{task.id}}">
+        <p>{{ task.subject }}</p>
+        <p>{{ task.asigned_member_name }}</p>
+        <p>{{ task.progress_time }} / {{ task.sheduled_time }}</p>
+    </div>
+    {% endfor %}
 </div>
-{% endfor %}
 
 
 
