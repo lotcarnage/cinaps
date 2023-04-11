@@ -1,0 +1,13 @@
+body {
+    background-color: #808080;
+}
+
+table.calendar {
+    border: solid 1px;
+    border-collapse: collapse;
+}
+
+table.calendar th,
+table.calendar td {
+    border: solid 1px black;
+}

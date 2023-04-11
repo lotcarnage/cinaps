@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block head %}
+<link rel="stylesheet" href="/static/css/calendar.css" />
+<script>
+
+</script>
+{% endblock %}
+
+{% block body %}
+<p><a href="/home">Home</a></p>
+
+<form>
+    <select name="task">
+        {% for task in tasks %}
+        <option value="{{ task.id }}">{{task.subject}}</option>
+        {% endfor %}
+    </select>
+</form>
+
+<table class="calendar">
+    {% for worktime in worktimes %}
+    <tr>
+        <td>{{ worktime.start_time }}</td>
+        <td>{{ worktime.task_name }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+
+{% endblock %}
