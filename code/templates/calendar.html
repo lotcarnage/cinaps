@@ -9,22 +9,40 @@
 {% block body %}
 <p><a href="/home">Home</a></p>
 
-<form>
-    <select name="task">
+<form action="/addworktime" method="post">
+    <a><input type="date" name="start_date" value=""></a>
+    <a><input type="time" name="start_time"></a>
+    <a><input type="time" name="end_time"></a>
+    <select name="task_id">
+        <option value="None">None</option>
         {% for task in tasks %}
         <option value="{{ task.id }}">{{task.subject}}</option>
         {% endfor %}
     </select>
+    <button class="add_button" type="submit">予定追加</button>
 </form>
 
-<table class="calendar">
+<div class="timeline">
     {% for worktime in worktimes %}
-    <tr>
-        <td>{{ worktime.start_time }}</td>
-        <td>{{ worktime.task_name }}</td>
-    </tr>
+    <div class="work">
+        <p>{{ worktime.start_time }} ~ {{ worktime.end_time }} | {{ worktime.task_name }}
+        <form class="control" action="/editworktime_task" method="post">
+            <input type="id" name="worktime_id" value="{{worktime.id}}" hidden>
+            <select name="task_id">
+                {% for task in tasks %}
+                <option value="{{ task.id }}">{{task.subject}}</option>
+                {% endfor %}
+            </select>
+            <button class="update" type="submit">更新</button>
+        </form>
+        <form class="control" action="/delete_worktime" method="post">
+            <input type="id" name="worktime_id" value="{{worktime.id}}" hidden>
+            <button class="delete" type="submit">削除</button>
+        </form>
+        </p>
+    </div>
     {% endfor %}
-</table>
+</div>
 
 
 {% endblock %}

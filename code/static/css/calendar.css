@@ -11,3 +11,22 @@ table.calendar th,
 table.calendar td {
     border: solid 1px black;
 }
+
+div.timeline {
+    width: 18em;
+}
+
+div.work {
+    border-radius: 2px;
+    background-color: #fff;
+    width: auto;
+    height: fit-content;
+}
+
+div.work p {
+    margin: 2px;
+}
+
+form.control {
+    display: inline;
+}
