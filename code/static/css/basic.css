@@ -6,8 +6,11 @@ div.taskcard {
     background-color: #fff;
     border-radius: 8px;
     margin: 4px;
-    width: 16em;
-    height: 6em;
+    padding: 4px 1em 4px 1em;
+    min-width: 16em;
+    min-height: 5em;
+    width: fit-content;
+    height: fit-content;
     filter: drop-shadow(2px 2px 2px rgba(0.2, 0.2, 0.2, 0.2));
     align-items: start;
 }

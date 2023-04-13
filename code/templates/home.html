@@ -1,58 +1,8 @@
 {% extends 'base.html' %}
 {% block head %}
 <link rel="stylesheet" href="/static/css/basic.css" />
+<script type="text/javascript" src="/static/js/tricolor_progress.js"></script>
 <script>
-    class TricolorProgress {
-        static #Draw(canvas_context, width, height, actual, scheduled, expected) {
-            if (expected == 0) {
-                if (0 < scheduled) {
-                    expected = scheduled;
-                } else {
-                    expected = 1;
-                }
-            }
-            const width_actual = Math.trunc(width * actual / expected);
-            const width_scheduled = Math.trunc(width * scheduled / expected);
-            canvas_context.fillStyle = '#444';
-            canvas_context.fillRect(0, 0, width, height);
-            canvas_context.fillStyle = '#3a6';
-            canvas_context.fillRect(0, 0, width_scheduled, height);
-            canvas_context.fillStyle = '#6f9';
-            canvas_context.fillRect(0, 0, width_actual, height);
-        }
-        constructor(parent, width, height) {
-            this.holder = document.createElement("span");
-            this.holder.className = "progress_bar";
-            this.progress_time_text = document.createElement("span");
-            this.sheduled_time_text = document.createElement("span");
-            this.man_minute_text = document.createElement("span");
-            this.canvas = document.createElement("canvas");
-            this.canvas.className = "progress_bar";
-            this.canvas.width = width;
-            this.canvas.height = height;
-            this.canvas_context = this.canvas.getContext('2d');
-            let delimiter_l = document.createElement("span");
-            let delimiter_r = document.createElement("span");
-            delimiter_l.innerText = "/";
-            delimiter_l.className = "delimiter";
-            delimiter_r.innerText = "/";
-            delimiter_r.className = "delimiter";
-            this.holder.appendChild(this.progress_time_text);
-            this.holder.appendChild(delimiter_l);
-            this.holder.appendChild(this.sheduled_time_text);
-            this.holder.appendChild(delimiter_r);
-            this.holder.appendChild(this.man_minute_text);
-            this.holder.appendChild(this.canvas);
-            parent.appendChild(this.holder);
-            TricolorProgress.#Draw(this.canvas_context, this.canvas.width, this.canvas.height, 0, 0, 1);
-        }
-        Update(actual, scheduled, expected) {
-            this.progress_time_text.innerText = actual.toString();
-            this.sheduled_time_text.innerText = scheduled.toString();
-            this.man_minute_text.innerText = expected.toString();
-            TricolorProgress.#Draw(this.canvas_context, this.canvas.width, this.canvas.height, actual, scheduled, expected);
-        }
-    }
     window.onload = function () {
         const task_infos = document.getElementById("task_infos").children;
         for (let i = 0; i < task_infos.length; i++) {
@@ -70,22 +20,7 @@
 
 {{ member.display_name }}
 
-<div id="task_infos">
-    {% for task in tasks %}
-    <span data-task_id="task_{{task.id}}" data-progress_time="{{ task.progress_time }}"
-        data-sheduled_time="{{ task.sheduled_time }}" data-man_minute="{{ task.man_minute }}"></span>
-    {% endfor %}
-</div>
-
-<div class="taskpanel">
-    {% for task in tasks %}
-    <div class="taskcard" id="task_{{task.id}}">
-        <p>{{ task.subject }}</p>
-        <p>{{ task.asigned_member_name }}</p>
-    </div>
-    {% endfor %}
-</div>
-
+{% include 'taskcard.html' %}
 
 
 {% endblock %}

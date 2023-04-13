@@ -64,6 +64,7 @@ def LoadModel_Task(db: flask_sqlalchemy.SQLAlchemy):
         description = db.Column(db.String(50))
         create_at = db.Column(db.DateTime)
         man_minute = db.Column(db.Integer)
+        limit_datetime = db.Column(db.DateTime)
     return Task
 
 

@@ -2,6 +2,7 @@ import models
 import flask
 import datetime
 import flask_sqlalchemy
+import math
 
 app = flask.Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
@@ -14,11 +15,19 @@ Task = models.LoadModel_Task(db)
 Work = models.LoadModel_Work(db)
 
 
+def _date_str_to_datetime(date_str: str) -> datetime.datetime:
+    return datetime.datetime.strptime(date_str, '%Y-%m-%d')
+
+
 def _extract_date_str(dt: datetime.datetime):
+    if dt is None:
+        return ""
     return f'{dt.year:4}-{dt.month:02}-{dt.day:02}'
 
 
 def _extract_time_str(dt: datetime.datetime):
+    if dt is None:
+        return ""
     return f'{dt.hour:02}:{dt.minute:02}'
 
 
@@ -41,7 +50,12 @@ def _load_tasks():
             task.asigned_member_name = '未割り当て'
         task.sheduled_time = task_sheduled_time_dict[task.id]
         task.progress_time = task_progress_time_dict[task.id]
-        task.man_minute = 0 if task.man_minute is None else task.man_minute
+        man_minute = 0 if task.man_minute is None else task.man_minute
+        task.limit_date = _extract_date_str(task.limit_datetime)
+        task.man_days = man_minute // (8 * 60)
+        task.man_hours = (man_minute % (8 * 60)) // 60
+        task.man_minutes = (man_minute % 60)
+        print(task.man_days, task.man_hours, task.man_minutes)
     return tasks
 
 
@@ -80,7 +94,8 @@ def home():
     projects = Project.query.all()
     tasks = _load_tasks()
     my_asigned_tasks = [task for task in tasks if task.asigned_member_id == member.id]
-    return flask.render_template('home.html', member=member, projects=projects, tasks=my_asigned_tasks)
+    members = Member.query.all()
+    return flask.render_template('home.html', member=member, projects=projects, tasks=my_asigned_tasks, members=members)
 
 
 @app.route('/projects', methods=['get'])
@@ -104,8 +119,8 @@ def addproject():
     project_name = flask.request.form.get('project_name')
     start_date = flask.request.form.get('start_date')
     expected_finish_date = flask.request.form.get('expected_finish_date')
-    start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d')
-    expected_finish_date = datetime.datetime.strptime(expected_finish_date, '%Y-%m-%d')
+    start_date = _date_str_to_datetime(start_date)
+    expected_finish_date = _date_str_to_datetime(expected_finish_date)
     new_project = Project(display_name=project_name, start_date=start_date, expected_finish_date=expected_finish_date)
     db.session.add(new_project)
     db.session.commit()
@@ -134,6 +149,34 @@ def addtask():
     db.session.add(new_task)
     db.session.commit()
     return flask.redirect(f'/projectedit?id={project_id}')
+
+
+@app.route('/updatetask', methods=['post'])
+def updatetask():
+    task_id = flask.request.form.get('task_id')
+    subject = flask.request.form.get('subject')
+    description = flask.request.form.get('description')
+    asigned_member_id = flask.request.form.get('asigned_member_id')
+    reviewer_id = flask.request.form.get('reviewer_id')
+    state = flask.request.form.get('state')
+    limit_datetime = flask.request.form.get('limit_datetime')
+    man_days = flask.request.form.get('man_days')
+    man_hours = flask.request.form.get('man_hours')
+    man_minutes = flask.request.form.get('man_minutes')
+    man_days = 0 if man_days is None else man_days
+    man_hours = 0 if man_hours is None else man_hours
+    man_minutes = 0 if man_minutes is None else man_minutes
+    man_minute = int(man_days) * 8 * 60 + int(man_hours) * 60 + int(man_minutes)
+    task = Task.query.filter_by(id=int(task_id)).first()
+    task.subject = subject
+    task.description = description
+    task.asigned_member_id = asigned_member_id
+    task.reviewer_id = reviewer_id
+    task.state = state
+    task.limit_datetime = _date_str_to_datetime(limit_datetime)
+    task.man_minute = man_minute
+    db.session.commit()
+    return flask.redirect('/home')
 
 
 @app.route('/calendar', methods=['get'])

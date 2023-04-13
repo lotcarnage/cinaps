@@ -1,0 +1,50 @@
+<div id="task_infos">
+    {% for task in tasks %}
+    <span data-task_id="task_{{task.id}}" data-progress_time="{{ task.progress_time }}" data-sheduled_time="{{ task.sheduled_time }}" data-man_minute="{{ task.man_minute }}"></span>
+    {% endfor %}
+</div>
+
+<div class="taskpanel">
+    {% for task in tasks %}
+    <div class="taskcard" id="task_{{task.id}}">
+        <details>
+            <summary>{{ task.subject }}</summary>
+            <form action="/updatetask" method="post">
+                <input type="id" name="task_id" value="{{ task.id }}" hidden>
+                <p>タスク名:<input type="text" name="subject" value="{{task.subject}}"></p>
+                <p>説明:<input type="text" name="description" value="{{task.description}}"></p>
+                <p>作業者:
+                    <select name="asigned_member_id" size="1">
+                        <option value="" selected>未割り当て</option>
+                        {% for member in members %}
+                        {% if task.asigned_member_id == member.id %}
+                        <option value="{{member.id}}" selected>{{ member.display_name }}</option>
+                        {% else %}
+                        <option value="{{member.id}}">{{ member.display_name }}</option>
+                        {% endif %}
+                        {% endfor %}
+                    </select>
+                </p>
+                <p>レビューアー:
+                    <select name="reviewer_id" size="1">
+                        <option value="" selected>未割り当て</option>
+                        {% for member in members %}
+                        {% if task.asigned_member_id == member.id %}
+                        <option value="{{member.id}}" selected>{{ member.display_name }}</option>
+                        {% else %}
+                        <option value="{{member.id}}">{{ member.display_name }}</option>
+                        {% endif %}
+                        {% endfor %}
+                    </select>
+                </p>
+                <p><input type="date" name="limit_datetime" value="{{task.limit_date}}"></p>
+                <input type="number" name="man_days" min="0" value="{{task.man_days}}" size="2">Day/
+                <input type="number" name="man_hours" min="0" value="{{task.man_hours}}" size="4">Hour/
+                <input type="number" name="man_minutes" min="0" value="{{task.man_minutes}}" size="4">Minute
+                <button id="updatetask" type="submit">更新</button>
+            </form>
+        </details>
+        <p>{{ task.asigned_member_name }}</p>
+    </div>
+    {% endfor %}
+</div>

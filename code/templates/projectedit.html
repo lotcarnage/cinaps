@@ -3,6 +3,17 @@
 <title>Projects</title>
 <link rel="stylesheet" href="/static/css/basic.css" />
 <link rel="stylesheet" href="/static/css/projectedit.css" />
+<script type="text/javascript" src="/static/js/tricolor_progress.js"></script>
+<script>
+    window.onload = function () {
+        const task_infos = document.getElementById("task_infos").children;
+        for (let i = 0; i < task_infos.length; i++) {
+            task_data = task_infos[i].dataset
+            progress_bar = new TricolorProgress(document.getElementById(task_data.task_id), 128, 16);
+            progress_bar.Update(task_data.progress_time, task_data.sheduled_time, task_data.man_minute,);
+        }
+    }
+</script>
 {% endblock %}
 
 {% block body %}
@@ -28,15 +39,8 @@
     </form>
 </div>
 
-<div class="taskpanel">
-    {% for task in tasks %}
-    <div class="taskcard" id="task_{{task.id}}">
-        <p>{{ task.subject }}</p>
-        <p>{{ task.asigned_member_name }}</p>
-        <p>{{ task.progress_time }} / {{ task.sheduled_time }}</p>
-    </div>
-    {% endfor %}
-</div>
+
+{% include 'taskcard.html' %}
 
 
 {% endblock %}
