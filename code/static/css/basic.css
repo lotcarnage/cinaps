@@ -15,3 +15,15 @@ div.taskcard {
 div.taskcard p {
     margin: 2px;
 }
+
+canvas.progress_bar {
+    margin-left: 2px;
+    border-radius: 4px;
+    vertical-align: middle;
+}
+
+span.progress_bar {
+    margin-left: 4px;
+    margin-right: 4px;
+    align-content: center;
+}

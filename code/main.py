@@ -41,6 +41,7 @@ def _load_tasks():
             task.asigned_member_name = '未割り当て'
         task.sheduled_time = task_sheduled_time_dict[task.id]
         task.progress_time = task_progress_time_dict[task.id]
+        task.man_minute = 0 if task.man_minute is None else task.man_minute
     return tasks
 
 
