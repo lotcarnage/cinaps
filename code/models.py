@@ -67,12 +67,12 @@ def LoadModel_Task(db: flask_sqlalchemy.SQLAlchemy):
     return Task
 
 
-def LoadModel_WorkTime(db: flask_sqlalchemy.SQLAlchemy):
-    class WorkTime(db.Model):
-        __tablename__ = 'worktimes'
+def LoadModel_Work(db: flask_sqlalchemy.SQLAlchemy):
+    class Work(db.Model):
+        __tablename__ = 'works'
         id = db.Column(db.Integer, primary_key=True, autoincrement=True)
         task_id = db.Column(db.Integer, db.ForeignKey('tasks.id'), nullable=False)
         member_id = db.Column(db.Integer, db.ForeignKey('members.id'), nullable=False)
         start_datetime = db.Column(db.DateTime)
         span_minute = db.Column(db.Integer)
-    return WorkTime
+    return Work

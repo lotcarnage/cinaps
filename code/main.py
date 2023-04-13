@@ -11,7 +11,7 @@ Member = models.LoadModel_Member(db)
 Fiscal = models.LoadModel_Fiscal(db)
 Project = models.LoadModel_Project(db)
 Task = models.LoadModel_Task(db)
-WorkTime = models.LoadModel_WorkTime(db)
+Work = models.LoadModel_Work(db)
 
 
 def _extract_date_str(dt: datetime.datetime):
@@ -25,15 +25,15 @@ def _extract_time_str(dt: datetime.datetime):
 def _load_tasks():
     tasks = Task.query.all()
     members = Member.query.all()
-    worktimes = WorkTime.query.all()
+    works = Work.query.all()
     member_dict = {member.id: member for member in members}
     task_sheduled_time_dict = {task.id: 0 for task in tasks}
     task_progress_time_dict = {task.id: 0 for task in tasks}
     now = datetime.datetime.now()
-    for worktime in worktimes:
-        if (worktime.start_datetime + datetime.timedelta(minutes=worktime.span_minute)) <= now:
-            task_progress_time_dict[worktime.task_id] += worktime.span_minute
-        task_sheduled_time_dict[worktime.task_id] += worktime.span_minute
+    for work in works:
+        if (work.start_datetime + datetime.timedelta(minutes=work.span_minute)) <= now:
+            task_progress_time_dict[work.task_id] += work.span_minute
+        task_sheduled_time_dict[work.task_id] += work.span_minute
     for task in tasks:
         if task.asigned_member_id in member_dict:
             task.asigned_member_name = member_dict[task.asigned_member_id].display_name
@@ -146,20 +146,20 @@ def calendar():
     tasks = Task.query.all()
     today = datetime.datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
     next_day = today + datetime.timedelta(days=1)
-    worktimes = WorkTime.query.filter_by(member_id=member.id).all()
-    worktimes = [worktime for worktime in worktimes if (today <= worktime.start_datetime < next_day)]
+    works = Work.query.filter_by(member_id=member.id).all()
+    works = [work for work in works if (today <= work.start_datetime < next_day)]
     task_name_dict = {task.id: task.subject for task in tasks}
-    for worktime in worktimes:
-        worktime.task_name = task_name_dict[worktime.task_id]
-        worktime.start_time = _extract_time_str(worktime.start_datetime)
-        worktime.end_time = _extract_time_str(worktime.start_datetime + datetime.timedelta(minutes=worktime.span_minute))
-    worktimes = sorted(worktimes, key=lambda x: x.start_time)
+    for work in works:
+        work.task_name = task_name_dict[work.task_id]
+        work.start_time = _extract_time_str(work.start_datetime)
+        work.end_time = _extract_time_str(work.start_datetime + datetime.timedelta(minutes=work.span_minute))
+    works = sorted(works, key=lambda x: x.start_time)
     my_tasks = [task for task in tasks if task.asigned_member_id == member.id]
-    return flask.render_template('calendar.html', tasks=my_tasks, worktimes=worktimes)
+    return flask.render_template('calendar.html', tasks=my_tasks, works=works)
 
 
-@app.route('/addworktime', methods=['post'])
-def addworktime():
+@app.route('/addwork', methods=['post'])
+def addwork():
     task_id = flask.request.form.get('task_id')
     start_date = flask.request.form.get('start_date')
     start_time = flask.request.form.get('start_time')
@@ -170,32 +170,32 @@ def addworktime():
     s_d = datetime.datetime(year=d.year, month=d.month, day=d.day, hour=s.hour, minute=s.minute)
     span_minute = (e - s).total_seconds() // 60
     task = Task.query.filter_by(id=task_id).first()
-    new_worktime = WorkTime(task_id=task_id, member_id=task.asigned_member_id, start_datetime=s_d, span_minute=span_minute)
-    db.session.add(new_worktime)
+    new_work = Work(task_id=task_id, member_id=task.asigned_member_id, start_datetime=s_d, span_minute=span_minute)
+    db.session.add(new_work)
     db.session.commit()
     return flask.redirect('/calendar')
 
 
-@app.route('/editworktime_task', methods=['post'])
-def editworktime_task():
-    worktime_id = int(flask.request.form.get('worktime_id'))
+@app.route('/editwork_task', methods=['post'])
+def editwork_task():
+    work_id = int(flask.request.form.get('work_id'))
     task_id = flask.request.form.get('task_id')
-    worktime = WorkTime.query.filter_by(id=worktime_id).first()
+    work = Work.query.filter_by(id=work_id).first()
     if task_id is None:
         return flask.redirect('/calendar')
     if task_id == 'delete':
-        db.session.delete(worktime)
+        db.session.delete(work)
     else:
-        worktime.task_id = task_id
+        work.task_id = task_id
     db.session.commit()
     return flask.redirect('/calendar')
 
 
-@app.route('/delete_worktime', methods=['post'])
-def delete_worktime():
-    worktime_id = flask.request.form.get('worktime_id')
-    worktime = WorkTime.query.filter_by(id=int(worktime_id)).first()
-    db.session.delete(worktime)
+@app.route('/delete_work', methods=['post'])
+def delete_work():
+    work_id = flask.request.form.get('work_id')
+    work = Work.query.filter_by(id=int(work_id)).first()
+    db.session.delete(work)
     db.session.commit()
     return flask.redirect('/calendar')
 
