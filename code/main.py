@@ -1,18 +1,11 @@
-import models
+from models import Member, Fiscal, Project, Task, Work
 import flask
 import datetime
-import flask_sqlalchemy
-import math
+from flask_sqlalchemy_wrapper import db
 
 app = flask.Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
-db = flask_sqlalchemy.SQLAlchemy(app)
-
-Member = models.LoadModel_Member(db)
-Fiscal = models.LoadModel_Fiscal(db)
-Project = models.LoadModel_Project(db)
-Task = models.LoadModel_Task(db)
-Work = models.LoadModel_Work(db)
+db.init_app(app)
 
 
 def _date_str_to_datetime(date_str: str) -> datetime.datetime:
