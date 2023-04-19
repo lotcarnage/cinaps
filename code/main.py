@@ -8,7 +8,9 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
 db.init_app(app)
 
 
-def _date_str_to_datetime(date_str: str) -> datetime.datetime:
+def _date_str_to_datetime(date_str: str) -> datetime.datetime | None:
+    if date_str == "":
+        return None
     return datetime.datetime.strptime(date_str, '%Y-%m-%d')
 
 
@@ -48,7 +50,6 @@ def _load_tasks():
         task.man_days = man_minute // (8 * 60)
         task.man_hours = (man_minute % (8 * 60)) // 60
         task.man_minutes = (man_minute % 60)
-        print(task.man_days, task.man_hours, task.man_minutes)
     return tasks
 
 
@@ -138,7 +139,6 @@ def addtask():
     description = flask.request.form.get('description')
     asigned_member_id = flask.request.form.get('asigned_member_id')
     new_task = Task(subject=subject, description=description, parent_project_id=project_id, asigned_member_id=asigned_member_id)
-    print(new_task)
     db.session.add(new_task)
     db.session.commit()
     return flask.redirect(f'/projectedit?id={project_id}')
