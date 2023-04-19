@@ -12,10 +12,6 @@ table.calendar td {
     border: solid 1px black;
 }
 
-div.timeline {
-    width: 18em;
-}
-
 div.work {
     border-radius: 2px;
     background-color: #fff;
@@ -29,4 +25,36 @@ div.work p {
 
 form.control {
     display: inline;
+}
+
+div.timeline {
+    position: relative;
+    background-color: bisque;
+    width: 32em;
+    height: 9em;
+    display: flex;
+    flex-wrap: nowrap;
+    flex-direction: row;
+    overflow-x: scroll;
+    overflow-y: hidden;
+}
+
+div.workitem {
+    position: absolute;
+    background-color: #fff;
+    border: solid black 1px;
+    width: 38px;
+    height: 80px;
+    top: 0px;
+    left: 0px;
+}
+
+div.timeslice {
+    border-radius: 2px;
+    border: solid #000 1px;
+    background-color: #fff;
+    width: 8em;
+    height: 8em;
+    overflow: hidden;
+    flex-shrink: 0;
 }
