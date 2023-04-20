@@ -239,8 +239,9 @@ def delete_work():
 def _init_db():
     user = Member.query.filter_by(login_name='testuser', password='hoge').first()
     if user is None:
-        user = Member(login_name='testuser', password='hoge', display_name='作業員A')
-        db.session.add(user)
+        db.session.add(Member(login_name='testuser', password='hoge', display_name='作業員A'))
+        db.session.add(Member(login_name='test2', password='hoge', display_name='作業員B'))
+        db.session.add(Member(login_name='test3', password='hoge', display_name='作業員C'))
         db.session.commit()
     return None
 
