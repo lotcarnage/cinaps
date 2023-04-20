@@ -115,7 +115,11 @@
             <input type="id" name="work_id" value="{{work.id}}" hidden>
             <select name="task_id">
                 {% for task in tasks %}
+                {% if work.task_id == task.id %}
+                <option value="{{ task.id }}" selected>{{task.subject}}</option>
+                {% else %}
                 <option value="{{ task.id }}">{{task.subject}}</option>
+                {% endif %}
                 {% endfor %}
             </select>
             <button class="update" type="submit">更新</button>
