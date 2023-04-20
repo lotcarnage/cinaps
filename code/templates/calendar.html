@@ -10,15 +10,33 @@
         const snap_width = 48;
         const grid_count = division * 24;
         const timeline_view_width = snap_width * division * 12;
-        const timeline_width = snap_width * grid_count;
         holder = document.getElementById('itemholder');
         holder.style.width = timeline_view_width.toString() + 'px';
+        timescale = document.createElement("div");
+        timescale.className = 'timescale';
+        holder.appendChild(timescale)
         for (let i = 0; i < grid_count; i++) {
             let dom = document.createElement("div")
             dom.style.left = (i * snap_width).toString() + 'px';
             dom.style.width = (snap_width - 1).toString() + 'px';
+            dom.style.height = '20px';
+            dom.className = "time";
+            let hour = Math.floor((i * 30) / 60).toString().padStart(2, '0');
+            let minute = ((i * 30) % 60).toString().padStart(2, '0');
+            dom.innerText = hour + ":" + minute;
+            timescale.appendChild(dom)
+        }
+
+        timeline_row = document.createElement("div");
+        timeline_row.className = 'timeline_row';
+        holder.appendChild(timeline_row)
+        for (let i = 0; i < grid_count; i++) {
+            let dom = document.createElement("div")
+            dom.style.top = '20px';
+            dom.style.left = (i * snap_width).toString() + 'px';
+            dom.style.width = (snap_width - 1).toString() + 'px';
             dom.className = "workgrid";
-            holder.appendChild(dom)
+            timeline_row.appendChild(dom)
         }
 
         for (let i = 0; i < work_infos.length; i++) {
