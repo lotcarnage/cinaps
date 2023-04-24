@@ -43,6 +43,7 @@
 			height: 2em;
 			vertical-align: middle;
 			text-align: center;
+			cursor: pointer;
 		}
 
 		.CalendarUI td:hover {
@@ -125,6 +126,7 @@
 <body>
 	<div id="holder">
 	</div>
+	<span id="view_date"></span>
 
 
 </body>
@@ -135,7 +137,7 @@
 			let today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 			return today;
 		}
-		constructor(parent) {
+		constructor(parent, select_day_callback = null) {
 			const week_day_class = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
 			const week_day_name = ["日", "月", "火", "水", "木", "金", "土"];
 			this.frame = document.createElement("div");
@@ -170,11 +172,18 @@
 			for (let i = 0; i < days.length; i++) {
 				let week = weeks[Math.floor(i / 7)];
 				let day = document.createElement("td");
-				day.className = week_day_class[i % 7];
+				const week_day_index = i % 7;
+				day.className = week_day_class[week_day_index];
 				day.innerText = i.toString();
 				days[i] = day;
+				day.addEventListener("click", event => {
+					if (this.select_day_callback != null) {
+						select_day_callback(this.yeaer_month.getFullYear(), this.yeaer_month.getMonth(), Number(event.target.innerText), week_day_index);
+					}
+				});
 				week.appendChild(day);
 			}
+			this.select_day_callback = select_day_callback;
 			this.year_month_view = year_month_view;
 			this.days = days;
 			this.frame.appendChild(header);
@@ -213,8 +222,14 @@
 		}
 
 	}
+	function update_date_view(year, month, day, week_day_index) {
+		const week_day_name = ["日", "月", "火", "水", "木", "金", "土"];
+		let view_date = document.getElementById("view_date");
+		view_date.innerText = year.toString() + "年" + month.toString() + "月" + day.toString() + "日" + "(" + week_day_name[week_day_index] + ")";
+	}
+
 	parent = document.getElementById("holder");
-	progress_bar = new CalendarUI(parent);
+	progress_bar = new CalendarUI(parent, update_date_view);
 </script>
 
 </html>
