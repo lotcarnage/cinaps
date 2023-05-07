@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<style>
+		.ScheduleUI {
+			--bg-color: #585;
+			--header-bg-color: #fff;
+			--text-color: #222;
+			--border-color: #000;
+			--frame-color: #333;
+			--hover-bg-color: #6d6;
+			--hover-border-color: #fff;
+			--holiday-color: #d33;
+			--today-bg-color: #4da;
+			--today-border-color: #555;
+			--out-of-month-text-color: #555;
+			--out-of-month-border-color: #333;
+			--out-of-month-holiday-color: #822;
+		}
+
+		div.ScheduleUI {
+			background-color: var(--bg-color);
+			color: var(--text-color);
+			border-radius: 6px;
+			width: 920px;
+			height: 118px;
+			padding: 4px;
+			position: relative;
+			overflow-x: scroll;
+			overflow-y: hidden;
+		}
+
+		.ScheduleUI div.timescale {
+			padding: 0;
+			margin: 0;
+			display: flex;
+			flex-wrap: nowrap;
+			flex-direction: row;
+			width: fit-content;
+			height: fit-content;
+		}
+
+		.ScheduleUI .timescale div.time {
+			font-size: smaller;
+			text-align: center;
+			background-color: var(--header-bg-color);
+			border-color: var(--border-color);
+			border-width: 1px;
+			border-bottom-style: solid;
+			border-top-style: solid;
+		}
+
+		.ScheduleUI .timescale div.time:nth-child(odd) {
+			border-right-style: dashed;
+		}
+
+		.ScheduleUI .timescale div.time:nth-child(even) {
+			border-right-style: solid;
+		}
+
+		.ScheduleUI div.timeline {
+			padding: 0;
+			margin: 0;
+			display: flex;
+			flex-wrap: nowrap;
+			flex-direction: row;
+			width: fit-content;
+		}
+
+		.ScheduleUI .timeline div.grid {
+			background-color: var(--bg-color);
+			border-color: var(--border-color);
+			border-width: 1px;
+			border-bottom-style: solid;
+			width: 40px;
+			height: 80px;
+			left: 0px;
+			z-index: 90;
+		}
+
+		.ScheduleUI .timeline div.grid:hover {
+			background-color: var(--hover-bg-color);
+		}
+
+		.ScheduleUI .timeline div.grid:nth-child(odd) {
+			border-right-style: dashed;
+		}
+
+		.ScheduleUI .timeline div.grid:nth-child(even) {
+			border-right-style: solid;
+		}
+	</style>
+</head>
+
+<body>
+	<div id="holder">
+	</div>
+
+
+</body>
+<script>
+	class TimelineUI {
+		constructor(parent, grid_count, grid_width, grid_height) {
+			let timeline = document.createElement("div");
+			timeline.className = 'timeline';
+			this.dom = timeline
+			this.dragging_item = null;
+			this.drag_offset_x = null;
+			for (let i = 0; i < grid_count; i++) {
+				let grid = document.createElement("div")
+				grid.style.left = (i * grid_width).toString() + 'px';
+				grid.style.width = (grid_width - 1).toString() + 'px';
+				grid.style.height = (grid_height).toString() + "px";
+				grid.className = "grid";
+				timeline.appendChild(grid);
+			}
+			parent.appendChild(timeline);
+			timeline.addEventListener('mousemove', e => {
+				let x = e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
+				let item_index = Math.floor((x - this.GetOffsetX()) / grid_width);
+				console.log(item_index);
+			});
+			timeline.addEventListener('mouseup', e => {
+				this.dragging_item = null;
+				this.drag_offset_x = null;
+			});
+		}
+		GetOffsetX() {
+			let obj = this.dom;
+			let e_posx = 0;
+			if (obj.offsetParent) {
+				do {
+					e_posx += obj.offsetLeft - obj.scrollLeft;
+				} while (obj = obj.offsetParent);
+			}
+			return e_posx;
+		}
+	}
+
+	class ScheduleUI {
+		static #MinuteToTimeString(minutes) {
+			let hour = Math.floor(minutes / 60).toString().padStart(2, '0');
+			let minute = (minutes % 60).toString().padStart(2, '0');
+			return hour + ":" + minute;
+		}
+		static #ConstructTimescale(grid_count, grid_width, grid_minute) {
+			let timescale = document.createElement("div");
+			timescale.className = 'timescale';
+			for (let i = 0; i < grid_count; i++) {
+				let time = document.createElement("div")
+				time.style.left = (i * grid_width).toString() + 'px';
+				time.style.width = (grid_width - 1).toString() + 'px';
+				time.className = "time";
+				time.innerText = ScheduleUI.#MinuteToTimeString(i * grid_minute);
+				timescale.appendChild(time)
+			}
+			return timescale;
+		}
+		constructor(parent) {
+			this.dragging_workitem = null;
+			this.drag_offset_x = null;
+			const division = 2;
+			const grid_minute = Math.floor(60 / division);
+			const snap_width = 48;
+			const grid_count = division * 24;
+			const timeline_view_width = 960;
+			let schedule_ui = document.createElement("div")
+			schedule_ui.className = "ScheduleUI";
+			schedule_ui.style.width = timeline_view_width.toString() + 'px';
+			let timescale = ScheduleUI.#ConstructTimescale(grid_count, snap_width, grid_minute);
+			schedule_ui.appendChild(timescale)
+			this.timeline = new TimelineUI(schedule_ui, grid_count, snap_width, 80);
+
+			schedule_ui.addEventListener('mousemove', e => {
+				let x = e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
+				let obj = schedule_ui;
+				let e_posx = 0;
+				if (obj.offsetParent) {
+					do {
+						e_posx += obj.offsetLeft - obj.scrollLeft;
+					} while (obj = obj.offsetParent);
+				}
+				let snap_x = Math.floor((x - e_posx) / snap_width) * snap_width
+				if (this.dragging_workitem != null) {
+					this.dragging_workitem.style.left = snap_x.toString() + 'px';
+				}
+			});
+			schedule_ui.addEventListener('mouseup', e => {
+				this.dragging_workitem = null;
+				this.drag_offset_x = null;
+			});
+			parent.appendChild(schedule_ui);
+		}
+		AddPlan(plan_display_name, plan_id, start_minute, span_minute) {
+			work_data = work_infos[i].dataset;
+			let plan = document.createElement("div");
+			plan.style.left = (i * snap_width).toString() + 'px';
+			plan.style.width = (snap_width - 1).toString() + 'px';
+			plan.addEventListener('mouseover', e => {
+				if (dragging_workitem == null) {
+					e.target.style.border = '1px solid lime';
+					e.target.style.cursor = 'move';
+				}
+			});
+			plan.addEventListener('mouseleave', e => {
+				if (dragging_workitem != null) {
+					if (dragging_workitem === e.target) {
+						return;
+					}
+				}
+				e.target.style.border = '1px solid black';
+			});
+			plan.addEventListener('mousedown', e => {
+				dragging_workitem = e.target;
+				drag_offset_x = e.offsetX;
+			});
+			plan.addEventListener('mouseup', e => {
+				dragging_workitem = null;
+				drag_offset_x = null;
+			});
+		}
+
+	}
+
+	parent = document.getElementById("holder");
+	schedule_ui = new ScheduleUI(parent);
+</script>
+
+</html>
