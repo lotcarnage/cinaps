@@ -9,8 +9,11 @@
 			--text-color: #222;
 			--border-color: #000;
 			--frame-color: #333;
-			--hover-bg-color: #6d6;
-			--hover-border-color: #fff;
+			--bg-color-hover: #6d6;
+			--border-color-hover: #fff;
+			--selected-bg-color: #44d;
+			--selected-bg-color-hover: #88f;
+
 			--holiday-color: #d33;
 			--today-bg-color: #4da;
 			--today-border-color: #555;
@@ -68,6 +71,14 @@
 			width: fit-content;
 		}
 
+		.ScheduleUI .timeline div.grid.selected {
+			background-color: var(--selected-bg-color);
+		}
+
+		.ScheduleUI .timeline div.grid.selected:hover {
+			background-color: var(--selected-bg-color-hover);
+		}
+
 		.ScheduleUI .timeline div.grid {
 			background-color: var(--bg-color);
 			border-color: var(--border-color);
@@ -80,7 +91,7 @@
 		}
 
 		.ScheduleUI .timeline div.grid:hover {
-			background-color: var(--hover-bg-color);
+			background-color: var(--bg-color-hover);
 		}
 
 		.ScheduleUI .timeline div.grid:nth-child(odd) {
@@ -96,6 +107,8 @@
 <body>
 	<div id="holder">
 	</div>
+	<div id="view">
+	</div>
 
 
 </body>
@@ -104,7 +117,7 @@
 		static #SortPair(lhv, rhv) {
 			return (lhv < rhv) ? [lhv, rhv] : [rhv, lhv];
 		}
-		constructor(parent, grid_count, grid_width, grid_height) {
+		constructor(parent, grid_count, grid_width, grid_height, selected_callback) {
 			let timeline = document.createElement("div");
 			timeline.className = 'timeline';
 			this.dom = timeline
@@ -112,6 +125,7 @@
 			this.is_dragging = false;
 			this.drag_start_index = null;
 			this.drag_end_index = null;
+			this.selected_callback = selected_callback;
 			this.items = new Array(grid_count);
 			for (let i = 0; i < grid_count; i++) {
 				let grid = document.createElement("div")
@@ -124,19 +138,39 @@
 			}
 			parent.appendChild(timeline);
 			this.DragOut = function (event) {
+				let [last_start_index, last_end_index] = TimelineUI.#SortPair(this.drag_start_index, this.drag_end_index);
+				for (let i = last_start_index; i <= last_end_index; i++) {
+					this.items[i].classList.remove("selected");
+				}
 				let out_index = this.GetItemIndex(event);
 				let [start_index, end_index] = TimelineUI.#SortPair(this.drag_start_index, out_index);
+				if (this.selected_callback) {
+					this.selected_callback(0, start_index, end_index);
+				}
 				console.log(start_index, end_index, event.buttons);
 			};
 			timeline.addEventListener('mousemove', e => {
-				if (this.is_dragging) {
-					this.DragOut(e);
+				let out_index = this.GetItemIndex(event);
+				if (this.drag_end_index == out_index) {
+					return;
+				}
+				if (e.buttons & 0x01) {
+					let [last_start_index, last_end_index] = TimelineUI.#SortPair(this.drag_start_index, this.drag_end_index);
+					for (let i = last_start_index; i <= last_end_index; i++) {
+						this.items[i].classList.remove("selected");
+					}
+					let [start_index, end_index] = TimelineUI.#SortPair(this.drag_start_index, out_index);
+					for (let i = start_index; i <= end_index; i++) {
+						this.items[i].classList.add("selected");
+					}
+					this.drag_end_index = out_index;
 				}
 			});
 			timeline.addEventListener('mousedown', e => {
 				this.is_dragging = true;
 				this.drag_start_index = this.GetItemIndex(e);
 				this.drag_end_index = this.drag_start_index;
+				this.items[this.drag_start_index].classList.add("selected");
 			});
 			timeline.addEventListener('mouseup', e => {
 				if (this.is_dragging) {
@@ -198,7 +232,7 @@
 			}
 			return timescale;
 		}
-		constructor(parent) {
+		constructor(parent, selected_callback) {
 			this.dragging_workitem = null;
 			this.drag_offset_x = null;
 			const division = 2;
@@ -211,7 +245,7 @@
 			schedule_ui.style.width = timeline_view_width.toString() + 'px';
 			let timescale = ScheduleUI.#ConstructTimescale(grid_count, snap_width, grid_minute);
 			schedule_ui.appendChild(timescale)
-			this.timeline = new TimelineUI(schedule_ui, grid_count, snap_width, 80);
+			this.timeline = new TimelineUI(schedule_ui, grid_count, snap_width, 80, selected_callback);
 
 			schedule_ui.addEventListener('mousemove', e => {
 				let x = e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
@@ -263,9 +297,13 @@
 		}
 
 	}
+	let view = document.getElementById("view");
+	selected_callback = function (timeline_index, start_index, end_index) {
+		view.innerText = start_index.toString() + ":" + end_index.toString();
+	};
 
 	parent = document.getElementById("holder");
-	schedule_ui = new ScheduleUI(parent);
+	schedule_ui = new ScheduleUI(parent, selected_callback);
 </script>
 
 </html>
