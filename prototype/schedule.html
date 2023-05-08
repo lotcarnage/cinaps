@@ -101,12 +101,18 @@
 </body>
 <script>
 	class TimelineUI {
+		static #SortPair(lhv, rhv) {
+			return (lhv < rhv) ? [lhv, rhv] : [rhv, lhv];
+		}
 		constructor(parent, grid_count, grid_width, grid_height) {
 			let timeline = document.createElement("div");
 			timeline.className = 'timeline';
 			this.dom = timeline
 			this.dragging_item = null;
-			this.drag_offset_x = null;
+			this.is_dragging = false;
+			this.drag_start_index = null;
+			this.drag_end_index = null;
+			this.items = new Array(grid_count);
 			for (let i = 0; i < grid_count; i++) {
 				let grid = document.createElement("div")
 				grid.style.left = (i * grid_width).toString() + 'px';
@@ -114,27 +120,62 @@
 				grid.style.height = (grid_height).toString() + "px";
 				grid.className = "grid";
 				timeline.appendChild(grid);
+				this.items[i] = grid;
 			}
 			parent.appendChild(timeline);
+			this.DragOut = function (event) {
+				let out_index = this.GetItemIndex(event);
+				let [start_index, end_index] = TimelineUI.#SortPair(this.drag_start_index, out_index);
+				console.log(start_index, end_index, event.buttons);
+			};
 			timeline.addEventListener('mousemove', e => {
-				let x = e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
-				let item_index = Math.floor((x - this.GetOffsetX()) / grid_width);
-				console.log(item_index);
+				if (this.is_dragging) {
+					this.DragOut(e);
+				}
+			});
+			timeline.addEventListener('mousedown', e => {
+				this.is_dragging = true;
+				this.drag_start_index = this.GetItemIndex(e);
+				this.drag_end_index = this.drag_start_index;
 			});
 			timeline.addEventListener('mouseup', e => {
-				this.dragging_item = null;
-				this.drag_offset_x = null;
+				if (this.is_dragging) {
+					this.DragOut(e);
+					this.is_dragging = false;
+				}
 			});
-		}
-		GetOffsetX() {
-			let obj = this.dom;
-			let e_posx = 0;
-			if (obj.offsetParent) {
-				do {
-					e_posx += obj.offsetLeft - obj.scrollLeft;
-				} while (obj = obj.offsetParent);
-			}
-			return e_posx;
+			timeline.addEventListener('mouseenter', e => {
+				if (this.is_dragging) {
+					this.DragOut(e);
+				} else {
+					if (e.buttons & 0x01) {
+						this.is_dragging = true;
+						this.DragOut(e);
+					}
+				}
+			});
+			timeline.addEventListener('mouseleave', e => {
+				if (this.is_dragging) {
+					this.DragOut(e);
+					this.is_dragging = false;
+				}
+			});
+
+			this.GetOffsetX = function () {
+				let obj = this.dom;
+				let e_posx = 0;
+				if (obj.offsetParent) {
+					do {
+						e_posx += obj.offsetLeft - obj.scrollLeft;
+					} while (obj = obj.offsetParent);
+				}
+				return e_posx;
+			};
+			this.GetItemIndex = function (event) {
+				let x = event.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
+				let item_index = Math.floor((x - this.GetOffsetX()) / grid_width);
+				return item_index;
+			};
 		}
 	}
 
