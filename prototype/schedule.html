@@ -25,13 +25,15 @@
 		div.ScheduleUI {
 			background-color: var(--bg-color);
 			color: var(--text-color);
-			border-radius: 6px;
-			width: 920px;
-			height: 118px;
-			padding: 4px;
+			border-radius: 0px;
+			width: fit-content;
+			max-width: 90%;
+			height: fit-content;
+			max-height: 90vh;
+			padding: 0 0 16px 0;
 			position: relative;
 			overflow-x: scroll;
-			overflow-y: hidden;
+			overflow-y: scroll;
 		}
 
 		.ScheduleUI div.timescale {
@@ -105,7 +107,7 @@
 </head>
 
 <body>
-	<div id="holder">
+	<div id="holder" draggable="false">
 	</div>
 	<div id="view">
 	</div>
@@ -117,10 +119,12 @@
 		static #SortPair(lhv, rhv) {
 			return (lhv < rhv) ? [lhv, rhv] : [rhv, lhv];
 		}
-		constructor(parent, grid_count, grid_width, grid_height, selected_callback) {
+		constructor(parent, index, grid_count, grid_width, grid_height, selected_callback) {
 			let timeline = document.createElement("div");
 			timeline.className = 'timeline';
+			timeline.draggable = false;
 			this.dom = timeline
+			this.index = index;
 			this.dragging_item = null;
 			this.is_dragging = false;
 			this.drag_start_index = null;
@@ -133,6 +137,7 @@
 				grid.style.width = (grid_width - 1).toString() + 'px';
 				grid.style.height = (grid_height).toString() + "px";
 				grid.className = "grid";
+				grid.draggable = false;
 				timeline.appendChild(grid);
 				this.items[i] = grid;
 			}
@@ -145,13 +150,16 @@
 				let out_index = this.GetItemIndex(event);
 				let [start_index, end_index] = TimelineUI.#SortPair(this.drag_start_index, out_index);
 				if (this.selected_callback) {
-					this.selected_callback(0, start_index, end_index);
+					this.selected_callback(this.index, start_index, end_index);
 				}
 				console.log(start_index, end_index, event.buttons);
 			};
 			timeline.addEventListener('mousemove', e => {
 				let out_index = this.GetItemIndex(event);
 				if (this.drag_end_index == out_index) {
+					return;
+				}
+				if (!this.is_dragging) {
 					return;
 				}
 				if (e.buttons & 0x01) {
@@ -178,19 +186,14 @@
 					this.is_dragging = false;
 				}
 			});
-			timeline.addEventListener('mouseenter', e => {
-				if (this.is_dragging) {
-					this.DragOut(e);
-				} else {
-					if (e.buttons & 0x01) {
-						this.is_dragging = true;
-						this.DragOut(e);
-					}
-				}
-			});
 			timeline.addEventListener('mouseleave', e => {
 				if (this.is_dragging) {
-					this.DragOut(e);
+					let [last_start_index, last_end_index] = TimelineUI.#SortPair(this.drag_start_index, this.drag_end_index);
+					for (let i = last_start_index; i <= last_end_index; i++) {
+						this.items[i].classList.remove("selected");
+					}
+					this.drag_start_index = null;
+					this.drag_end_index = null;
 					this.is_dragging = false;
 				}
 			});
@@ -239,13 +242,15 @@
 			const grid_minute = Math.floor(60 / division);
 			const snap_width = 48;
 			const grid_count = division * 24;
-			const timeline_view_width = 960;
 			let schedule_ui = document.createElement("div")
 			schedule_ui.className = "ScheduleUI";
-			schedule_ui.style.width = timeline_view_width.toString() + 'px';
+			schedule_ui.draggable = false;
 			let timescale = ScheduleUI.#ConstructTimescale(grid_count, snap_width, grid_minute);
 			schedule_ui.appendChild(timescale)
-			this.timeline = new TimelineUI(schedule_ui, grid_count, snap_width, 80, selected_callback);
+			this.timelines = new Array();
+			this.timelines.push(new TimelineUI(schedule_ui, 0, grid_count, snap_width, 80, selected_callback));
+			this.timelines.push(new TimelineUI(schedule_ui, 1, grid_count, snap_width, 80, selected_callback));
+			this.timelines.push(new TimelineUI(schedule_ui, 2, grid_count, snap_width, 80, selected_callback));
 
 			schedule_ui.addEventListener('mousemove', e => {
 				let x = e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
@@ -299,7 +304,7 @@
 	}
 	let view = document.getElementById("view");
 	selected_callback = function (timeline_index, start_index, end_index) {
-		view.innerText = start_index.toString() + ":" + end_index.toString();
+		view.innerText = "[" + timeline_index.toString() + "]" + start_index.toString() + ":" + end_index.toString();
 	};
 
 	parent = document.getElementById("holder");
