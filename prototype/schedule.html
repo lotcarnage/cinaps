@@ -22,18 +22,18 @@
 			--out-of-month-holiday-color: #822;
 		}
 
-		div.ScheduleUI {
+		table.ScheduleUI {
 			background-color: var(--bg-color);
 			color: var(--text-color);
 			border-radius: 0px;
+			border-spacing: 0;
 			width: fit-content;
 			max-width: 90%;
 			height: fit-content;
 			max-height: 90vh;
 			padding: 0 0 16px 0;
 			position: relative;
-			overflow-x: scroll;
-			overflow-y: scroll;
+			overflow: scroll;
 		}
 
 		.ScheduleUI div.timescale {
@@ -46,7 +46,7 @@
 			height: fit-content;
 		}
 
-		.ScheduleUI .timescale div.time {
+		.ScheduleUI .timescale th.time {
 			font-size: smaller;
 			text-align: center;
 			background-color: var(--header-bg-color);
@@ -56,11 +56,11 @@
 			border-top-style: solid;
 		}
 
-		.ScheduleUI .timescale div.time:nth-child(odd) {
+		.ScheduleUI .timescale th.time:nth-child(odd) {
 			border-right-style: dashed;
 		}
 
-		.ScheduleUI .timescale div.time:nth-child(even) {
+		.ScheduleUI .timescale th.time:nth-child(even) {
 			border-right-style: solid;
 		}
 
@@ -73,15 +73,15 @@
 			width: fit-content;
 		}
 
-		.ScheduleUI .timeline div.grid.selected {
+		.ScheduleUI .timeline td.grid.selected {
 			background-color: var(--selected-bg-color);
 		}
 
-		.ScheduleUI .timeline div.grid.selected:hover {
+		.ScheduleUI .timeline td.grid.selected:hover {
 			background-color: var(--selected-bg-color-hover);
 		}
 
-		.ScheduleUI .timeline div.grid {
+		.ScheduleUI .timeline td.grid {
 			background-color: var(--bg-color);
 			border-color: var(--border-color);
 			border-width: 1px;
@@ -92,15 +92,15 @@
 			z-index: 90;
 		}
 
-		.ScheduleUI .timeline div.grid:hover {
+		.ScheduleUI .timeline td.grid:hover {
 			background-color: var(--bg-color-hover);
 		}
 
-		.ScheduleUI .timeline div.grid:nth-child(odd) {
+		.ScheduleUI .timeline td.grid:nth-child(odd) {
 			border-right-style: dashed;
 		}
 
-		.ScheduleUI .timeline div.grid:nth-child(even) {
+		.ScheduleUI .timeline td.grid:nth-child(even) {
 			border-right-style: solid;
 		}
 	</style>
@@ -120,7 +120,7 @@
 			return (lhv < rhv) ? [lhv, rhv] : [rhv, lhv];
 		}
 		constructor(parent, index, grid_count, grid_width, grid_height, selected_callback) {
-			let timeline = document.createElement("div");
+			let timeline = document.createElement("tr");
 			timeline.className = 'timeline';
 			timeline.draggable = false;
 			this.dom = timeline
@@ -132,7 +132,7 @@
 			this.selected_callback = selected_callback;
 			this.items = new Array(grid_count);
 			for (let i = 0; i < grid_count; i++) {
-				let grid = document.createElement("div")
+				let grid = document.createElement("td")
 				grid.style.left = (i * grid_width).toString() + 'px';
 				grid.style.width = (grid_width - 1).toString() + 'px';
 				grid.style.height = (grid_height).toString() + "px";
@@ -223,10 +223,10 @@
 			return hour + ":" + minute;
 		}
 		static #ConstructTimescale(grid_count, grid_width, grid_minute) {
-			let timescale = document.createElement("div");
+			let timescale = document.createElement("tr");
 			timescale.className = 'timescale';
 			for (let i = 0; i < grid_count; i++) {
-				let time = document.createElement("div")
+				let time = document.createElement("th")
 				time.style.left = (i * grid_width).toString() + 'px';
 				time.style.width = (grid_width - 1).toString() + 'px';
 				time.className = "time";
@@ -242,7 +242,7 @@
 			const grid_minute = Math.floor(60 / division);
 			const snap_width = 48;
 			const grid_count = division * 24;
-			let schedule_ui = document.createElement("div")
+			let schedule_ui = document.createElement("table")
 			schedule_ui.className = "ScheduleUI";
 			schedule_ui.draggable = false;
 			let timescale = ScheduleUI.#ConstructTimescale(grid_count, snap_width, grid_minute);
