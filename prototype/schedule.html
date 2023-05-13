@@ -22,17 +22,20 @@
 			--out-of-month-holiday-color: #822;
 		}
 
+		div.ScheduleUI {
+			width: fit-content;
+			max-width: 90%;
+			height: fit-content;
+			max-height: 90vh;
+			overflow: scroll;
+		}
+
 		table.ScheduleUI {
 			background-color: var(--bg-color);
 			color: var(--text-color);
 			border-radius: 0px;
 			border-spacing: 0;
-			width: fit-content;
-			max-width: 90%;
-			height: fit-content;
-			max-height: 90vh;
 			padding: 0 0 16px 0;
-			position: relative;
 			overflow: scroll;
 		}
 
@@ -52,16 +55,32 @@
 			background-color: var(--header-bg-color);
 			border-color: var(--border-color);
 			border-width: 1px;
+			border-style: solid;
+			position: sticky;
+			top: 0;
+			left: 0;
+			z-index: 92;
+		}
+
+		.ScheduleUI .timescale td.time {
+			font-size: smaller;
+			text-align: center;
+			background-color: var(--header-bg-color);
+			border-color: var(--border-color);
+			border-width: 1px;
 			border-bottom-style: solid;
 			border-top-style: solid;
+			position: sticky;
+			top: 0;
+			z-index: 91;
 		}
 
-		.ScheduleUI .timescale th.time:nth-child(odd) {
-			border-right-style: dashed;
-		}
-
-		.ScheduleUI .timescale th.time:nth-child(even) {
+		.ScheduleUI .timescale td.time:nth-child(odd) {
 			border-right-style: solid;
+		}
+
+		.ScheduleUI .timescale td.time:nth-child(even) {
+			border-right-style: dashed;
 		}
 
 		.ScheduleUI div.timeline {
@@ -81,6 +100,17 @@
 			background-color: var(--selected-bg-color-hover);
 		}
 
+		.ScheduleUI .timeline th {
+			background-color: var(--header-bg-color);
+			border-color: var(--border-color);
+			border-width: 1px;
+			border-style: solid;
+			border-top-style: none;
+			left: 0px;
+			position: sticky;
+			z-index: 90;
+		}
+
 		.ScheduleUI .timeline td.grid {
 			background-color: var(--bg-color);
 			border-color: var(--border-color);
@@ -97,11 +127,11 @@
 		}
 
 		.ScheduleUI .timeline td.grid:nth-child(odd) {
-			border-right-style: dashed;
+			border-right-style: solid;
 		}
 
 		.ScheduleUI .timeline td.grid:nth-child(even) {
-			border-right-style: solid;
+			border-right-style: dashed;
 		}
 	</style>
 </head>
@@ -119,7 +149,7 @@
 		static #SortPair(lhv, rhv) {
 			return (lhv < rhv) ? [lhv, rhv] : [rhv, lhv];
 		}
-		constructor(parent, index, grid_count, grid_width, grid_height, selected_callback) {
+		constructor(parent, index, name, grid_count, grid_width, grid_height, selected_callback) {
 			let timeline = document.createElement("tr");
 			timeline.className = 'timeline';
 			timeline.draggable = false;
@@ -131,6 +161,12 @@
 			this.drag_end_index = null;
 			this.selected_callback = selected_callback;
 			this.items = new Array(grid_count);
+			{
+				let time = document.createElement("th")
+				time.className = "time";
+				time.innerText = name;
+				timeline.appendChild(time)
+			}
 			for (let i = 0; i < grid_count; i++) {
 				let grid = document.createElement("td")
 				grid.style.left = (i * grid_width).toString() + 'px';
@@ -225,10 +261,14 @@
 		static #ConstructTimescale(grid_count, grid_width, grid_minute) {
 			let timescale = document.createElement("tr");
 			timescale.className = 'timescale';
-			for (let i = 0; i < grid_count; i++) {
+			{
 				let time = document.createElement("th")
-				time.style.left = (i * grid_width).toString() + 'px';
-				time.style.width = (grid_width - 1).toString() + 'px';
+				time.className = "time";
+				time.innerText = "Name";
+				timescale.appendChild(time)
+			}
+			for (let i = 0; i < grid_count; i++) {
+				let time = document.createElement("td")
 				time.className = "time";
 				time.innerText = ScheduleUI.#MinuteToTimeString(i * grid_minute);
 				timescale.appendChild(time)
@@ -242,19 +282,21 @@
 			const grid_minute = Math.floor(60 / division);
 			const snap_width = 48;
 			const grid_count = division * 24;
-			let schedule_ui = document.createElement("table")
+			let schedule_ui = document.createElement("div")
+			let timetable = document.createElement("table")
 			schedule_ui.className = "ScheduleUI";
-			schedule_ui.draggable = false;
+			timetable.className = "ScheduleUI";
+			timetable.draggable = false;
 			let timescale = ScheduleUI.#ConstructTimescale(grid_count, snap_width, grid_minute);
-			schedule_ui.appendChild(timescale)
+			timetable.appendChild(timescale)
 			this.timelines = new Array();
-			this.timelines.push(new TimelineUI(schedule_ui, 0, grid_count, snap_width, 80, selected_callback));
-			this.timelines.push(new TimelineUI(schedule_ui, 1, grid_count, snap_width, 80, selected_callback));
-			this.timelines.push(new TimelineUI(schedule_ui, 2, grid_count, snap_width, 80, selected_callback));
+			this.timelines.push(new TimelineUI(timetable, 0, "AAA", grid_count, snap_width, 80, selected_callback));
+			this.timelines.push(new TimelineUI(timetable, 1, "BBB", grid_count, snap_width, 80, selected_callback));
+			this.timelines.push(new TimelineUI(timetable, 2, "CCC", grid_count, snap_width, 80, selected_callback));
 
-			schedule_ui.addEventListener('mousemove', e => {
+			timetable.addEventListener('mousemove', e => {
 				let x = e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
-				let obj = schedule_ui;
+				let obj = timetable;
 				let e_posx = 0;
 				if (obj.offsetParent) {
 					do {
@@ -266,10 +308,11 @@
 					this.dragging_workitem.style.left = snap_x.toString() + 'px';
 				}
 			});
-			schedule_ui.addEventListener('mouseup', e => {
+			timetable.addEventListener('mouseup', e => {
 				this.dragging_workitem = null;
 				this.drag_offset_x = null;
 			});
+			schedule_ui.appendChild(timetable);
 			parent.appendChild(schedule_ui);
 		}
 		AddPlan(plan_display_name, plan_id, start_minute, span_minute) {
