@@ -152,13 +152,13 @@
 		constructor(parent, index, name, grid_count, grid_width, grid_height, selected_callback) {
 			let timeline = document.createElement("tr");
 			timeline.className = 'timeline';
-			timeline.draggable = false;
 			this.dom = timeline
 			this.index = index;
 			this.dragging_item = null;
 			this.is_dragging = false;
 			this.drag_start_index = null;
 			this.drag_end_index = null;
+			this.index_of_pointer = null;
 			this.selected_callback = selected_callback;
 			this.items = new Array(grid_count);
 			{
@@ -173,28 +173,40 @@
 				grid.style.width = (grid_width - 1).toString() + 'px';
 				grid.style.height = (grid_height).toString() + "px";
 				grid.className = "grid";
-				grid.draggable = false;
+				grid.addEventListener('mousedown', e => {
+					this.is_dragging = true;
+					this.drag_start_index = i;
+					this.drag_end_index = i;
+					grid.classList.add("selected");
+				});
+				grid.addEventListener('mouseup', e => {
+					if (this.is_dragging) {
+						this.drag_end_index = this.index_of_pointer;
+						this.DragOut(e);
+						this.is_dragging = false;
+					}
+				});
+				grid.addEventListener('mouseenter', e => {
+					this.index_of_pointer = i;
+				});
+				grid.addEventListener('mouseleve', e => {
+					this.index_of_pointer = null;
+				});
+
 				timeline.appendChild(grid);
 				this.items[i] = grid;
 			}
 			parent.appendChild(timeline);
 			this.DragOut = function (event) {
-				let [last_start_index, last_end_index] = TimelineUI.#SortPair(this.drag_start_index, this.drag_end_index);
-				for (let i = last_start_index; i <= last_end_index; i++) {
+				let [start_index, end_index] = TimelineUI.#SortPair(this.drag_start_index, this.drag_end_index);
+				for (let i = start_index; i <= end_index; i++) {
 					this.items[i].classList.remove("selected");
 				}
-				let out_index = this.GetItemIndex(event);
-				let [start_index, end_index] = TimelineUI.#SortPair(this.drag_start_index, out_index);
 				if (this.selected_callback) {
 					this.selected_callback(this.index, start_index, end_index);
 				}
-				console.log(start_index, end_index, event.buttons);
 			};
 			timeline.addEventListener('mousemove', e => {
-				let out_index = this.GetItemIndex(event);
-				if (this.drag_end_index == out_index) {
-					return;
-				}
 				if (!this.is_dragging) {
 					return;
 				}
@@ -203,33 +215,22 @@
 					for (let i = last_start_index; i <= last_end_index; i++) {
 						this.items[i].classList.remove("selected");
 					}
-					let [start_index, end_index] = TimelineUI.#SortPair(this.drag_start_index, out_index);
+					let [start_index, end_index] = TimelineUI.#SortPair(this.drag_start_index, this.index_of_pointer);
 					for (let i = start_index; i <= end_index; i++) {
 						this.items[i].classList.add("selected");
 					}
-					this.drag_end_index = out_index;
-				}
-			});
-			timeline.addEventListener('mousedown', e => {
-				this.is_dragging = true;
-				this.drag_start_index = this.GetItemIndex(e);
-				this.drag_end_index = this.drag_start_index;
-				this.items[this.drag_start_index].classList.add("selected");
-			});
-			timeline.addEventListener('mouseup', e => {
-				if (this.is_dragging) {
-					this.DragOut(e);
-					this.is_dragging = false;
+					this.drag_end_index = this.index_of_pointer;
 				}
 			});
 			timeline.addEventListener('mouseleave', e => {
 				if (this.is_dragging) {
-					let [last_start_index, last_end_index] = TimelineUI.#SortPair(this.drag_start_index, this.drag_end_index);
+					let [last_start_index, last_end_index] = TimelineUI.#SortPair(this.drag_start_index, this.index_of_pointer);
 					for (let i = last_start_index; i <= last_end_index; i++) {
 						this.items[i].classList.remove("selected");
 					}
 					this.drag_start_index = null;
 					this.drag_end_index = null;
+					this.index_of_pointer = null;
 					this.is_dragging = false;
 				}
 			});
@@ -286,7 +287,6 @@
 			let timetable = document.createElement("table")
 			schedule_ui.className = "ScheduleUI";
 			timetable.className = "ScheduleUI";
-			timetable.draggable = false;
 			let timescale = ScheduleUI.#ConstructTimescale(grid_count, snap_width, grid_minute);
 			timetable.appendChild(timescale)
 			this.timelines = new Array();
