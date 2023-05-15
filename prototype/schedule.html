@@ -182,7 +182,7 @@
 				grid.addEventListener('mouseup', e => {
 					if (this.is_dragging) {
 						this.drag_end_index = this.index_of_pointer;
-						this.DragOut(e);
+						this.#dragOut();
 						this.is_dragging = false;
 					}
 				});
@@ -197,60 +197,47 @@
 				this.items[i] = grid;
 			}
 			parent.appendChild(timeline);
-			this.DragOut = function (event) {
-				let [start_index, end_index] = TimelineUI.#SortPair(this.drag_start_index, this.drag_end_index);
-				for (let i = start_index; i <= end_index; i++) {
-					this.items[i].classList.remove("selected");
-				}
-				if (this.selected_callback) {
-					this.selected_callback(this.index, start_index, end_index);
-				}
-			};
+
 			timeline.addEventListener('mousemove', e => {
 				if (!this.is_dragging) {
 					return;
 				}
 				if (e.buttons & 0x01) {
-					let [last_start_index, last_end_index] = TimelineUI.#SortPair(this.drag_start_index, this.drag_end_index);
-					for (let i = last_start_index; i <= last_end_index; i++) {
-						this.items[i].classList.remove("selected");
-					}
-					let [start_index, end_index] = TimelineUI.#SortPair(this.drag_start_index, this.index_of_pointer);
-					for (let i = start_index; i <= end_index; i++) {
-						this.items[i].classList.add("selected");
-					}
+					this.#unselectCells(this.drag_start_index, this.drag_end_index);
+					this.#selectCells(this.drag_start_index, this.index_of_pointer);
 					this.drag_end_index = this.index_of_pointer;
 				}
 			});
 			timeline.addEventListener('mouseleave', e => {
 				if (this.is_dragging) {
-					let [last_start_index, last_end_index] = TimelineUI.#SortPair(this.drag_start_index, this.index_of_pointer);
-					for (let i = last_start_index; i <= last_end_index; i++) {
-						this.items[i].classList.remove("selected");
-					}
+					this.#unselectCells(0, grid_count);
 					this.drag_start_index = null;
 					this.drag_end_index = null;
 					this.index_of_pointer = null;
 					this.is_dragging = false;
 				}
 			});
-
-			this.GetOffsetX = function () {
-				let obj = this.dom;
-				let e_posx = 0;
-				if (obj.offsetParent) {
-					do {
-						e_posx += obj.offsetLeft - obj.scrollLeft;
-					} while (obj = obj.offsetParent);
-				}
-				return e_posx;
-			};
-			this.GetItemIndex = function (event) {
-				let x = event.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
-				let item_index = Math.floor((x - this.GetOffsetX()) / grid_width);
-				return item_index;
-			};
 		}
+		#selectCells(lhv_index, rhv_index) {
+			let [start_index, end_index] = TimelineUI.#SortPair(lhv_index, rhv_index);
+			for (let i = start_index; i <= end_index; i++) {
+				this.items[i].classList.add("selected");
+			}
+		};
+		#unselectCells(lhv_index, rhv_index) {
+			let [start_index, end_index] = TimelineUI.#SortPair(lhv_index, rhv_index);
+			for (let i = start_index; i <= end_index; i++) {
+				this.items[i].classList.remove("selected");
+			}
+		};
+		#dragOut() {
+			this.#unselectCells(this.drag_start_index, this.index_of_pointer);
+			if (this.selected_callback) {
+				let [start_index, end_index] = TimelineUI.#SortPair(this.drag_start_index, this.index_of_pointer)
+				this.selected_callback(this.index, start_index, end_index);
+			}
+		};
+
 	}
 
 	class ScheduleUI {
