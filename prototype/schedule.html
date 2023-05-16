@@ -210,7 +210,7 @@
 			});
 			timeline.addEventListener('mouseleave', e => {
 				if (this.is_dragging) {
-					this.#unselectCells(0, grid_count);
+					this.#unselectCells(0, grid_count - 1);
 					this.drag_start_index = null;
 					this.drag_end_index = null;
 					this.index_of_pointer = null;
