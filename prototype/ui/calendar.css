@@ -1,0 +1,117 @@
+.CalendarUI {
+	--bg-color: #222;
+	--text-color: #ddd;
+	--border-color: #555;
+	--frame-color: #333;
+	--hover-bg-color: gray;
+	--hover-border-color: #ddd;
+	--holiday-color: #d33;
+	--today-bg-color: #4da;
+	--today-border-color: #555;
+	--out-of-month-text-color: #555;
+	--out-of-month-border-color: #333;
+	--out-of-month-holiday-color: #822;
+}
+
+div.CalendarUI {
+	background-color: var(--bg-color);
+	color: var(--text-color);
+	border-radius: 6px;
+	width: fit-content;
+	padding: 4px;
+}
+
+.CalendarUI table {
+	background-color: var(--frame-color);
+	border-radius: 4px;
+}
+
+.CalendarUI th {
+	color: var(--text-color);
+}
+
+.CalendarUI td {
+	background-color: var(--bg-color);
+	color: var(--text-color);
+	border: solid var(--border-color) 1px;
+	width: 2em;
+	height: 2em;
+	vertical-align: middle;
+	text-align: center;
+	cursor: pointer;
+}
+
+.CalendarUI td:hover {
+	background-color: var(--hover-bg-color);
+	border-color: var(--hover-border-color);
+}
+
+.CalendarUI td.today {
+	background-color: var(--today-bg-color);
+	border-color: var(--today-border-color);
+}
+
+.CalendarUI td.out_of_month {
+	color: var(--out-of-month-text-color);
+	border-color: var(--out-of-month-border-color);
+}
+
+.CalendarUI td.out_of_month.sat,
+.CalendarUI td.out_of_month.sun {
+	color: var(--out-of-month-holiday-color);
+}
+
+.CalendarUI td.sat,
+td.sun,
+th.sat,
+th.sun {
+	color: var(--holiday-color);
+}
+
+.CalendarUI div.header {
+	display: flex;
+	font-size: larger;
+	vertical-align: middle;
+	text-align: center;
+}
+
+.CalendarUI span.button {
+	display: inline;
+	border: solid var(--border-color) 2px;
+	border-radius: 4px;
+	width: 24px;
+	height: 24px;
+	padding: 0;
+}
+
+.CalendarUI .button::before {
+	display: inline-block;
+	content: "";
+	margin-bottom: 5px;
+	width: 8px;
+	height: 8px;
+	border-top: solid var(--border-color) 2px;
+	border-left: solid var(--border-color) 2px;
+}
+
+.CalendarUI .left_button {
+	margin-right: auto;
+}
+
+.CalendarUI .right_button {
+	margin-left: auto;
+}
+
+.CalendarUI .left_button::before {
+	transform: rotate(-45deg);
+}
+
+.CalendarUI .right_button::before {
+	transform: rotate(135deg);
+}
+
+.CalendarUI .button:hover,
+.CalendarUI .button:hover::before {
+	background-color: var(--hover-bg-color);
+	border-color: var(--hover-border-color);
+}
