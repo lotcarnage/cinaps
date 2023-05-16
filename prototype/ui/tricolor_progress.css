@@ -1,0 +1,32 @@
+.TricolorProgressUI {
+	--bg-color: #222;
+	--text-color: #ddd;
+	--border-color: #555;
+	--frame-color: #333;
+	--hover-bg-color: gray;
+	--hover-border-color: #ddd;
+	--holiday-color: #d33;
+	--today-bg-color: #4da;
+	--today-border-color: #555;
+	--out-of-month-text-color: #555;
+	--out-of-month-border-color: #333;
+	--out-of-month-holiday-color: #822;
+}
+
+div.TricolorProgressUI {
+	display: inline;
+	background-color: var(--bg-color);
+	color: var(--text-color);
+	border-radius: 6px;
+	font-size: larger;
+	width: fit-content;
+	height: fit-content;
+	vertical-align: middle;
+	padding: 0;
+}
+
+canvas.TricolorProgressUI {
+	border-radius: 4px;
+	vertical-align: middle;
+	margin: 0;
+}

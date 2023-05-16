@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<link rel="stylesheet" href="tricolor_progress.css" />
+	<script type="text/javascript" src="tricolor_progress.js"></script>
+</head>
+
+<body>
+	<div id="holder">
+	</div>
+	<span id="view_date"></span>
+</body>
+
+<script>
+	let parent = document.getElementById("holder");
+	let progress_bar = new TricolorProgressUI(parent, 256, 18);
+	progress_bar.Update(24, 56, 100);
+</script>
+
+</html>
