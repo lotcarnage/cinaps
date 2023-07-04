@@ -14,8 +14,10 @@
 
 <script>
 	let parent = document.getElementById("holder");
-	let progress_bar = new TricolorProgressUI(parent, 256, 18);
+	let progress_bar = new TricolorProgressUI(parent, "test", 256, 18);
 	progress_bar.Update(24, 56, 100);
+	let progress_bar2 = new TricolorProgressUI(parent, "test2", 256, 64);
+	progress_bar2.Update(8, 19, 21);
 </script>
 
 </html>

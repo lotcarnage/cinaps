@@ -1,32 +1,42 @@
 .TricolorProgressUI {
-	--bg-color: #222;
-	--text-color: #ddd;
-	--border-color: #555;
-	--frame-color: #333;
-	--hover-bg-color: gray;
-	--hover-border-color: #ddd;
-	--holiday-color: #d33;
-	--today-bg-color: #4da;
-	--today-border-color: #555;
-	--out-of-month-text-color: #555;
-	--out-of-month-border-color: #333;
-	--out-of-month-holiday-color: #822;
+	--bg-color: #444;
+	--text-color: #eee;
+	--name-color: #444;
+	--name-bg-color: #ddd;
+	--progress-border-color: #fff;
 }
 
 div.TricolorProgressUI {
-	display: inline;
+	display: flex;
 	background-color: var(--bg-color);
 	color: var(--text-color);
 	border-radius: 6px;
-	font-size: larger;
 	width: fit-content;
-	height: fit-content;
+	align-items: center;
 	vertical-align: middle;
-	padding: 0;
+	padding: 2px;
+	margin: 1px;
+}
+
+div.TricolorProgressUI span {
+	width: auto;
+}
+
+div.TricolorProgressUI span.name {
+	background-color: var(--name-bg-color);
+	color: var(--name-color);
+	padding: 0 4px 0 4px;
+	margin-right: 4px;
+	border-top-left-radius: 4px;
+	border-bottom-left-radius: 4px;
+	width: 8em;
 }
 
 canvas.TricolorProgressUI {
+	margin: 0 1px 0 8px;
 	border-radius: 4px;
+	border-width: 2px;
+	border-style: solid;
+	border-color: var(--progress-border-color);
 	vertical-align: middle;
-	margin: 0;
 }
