@@ -42,15 +42,11 @@
 		.ScheduleUI div.timescale {
 			padding: 0;
 			margin: 0;
-			display: flex;
-			flex-wrap: nowrap;
-			flex-direction: row;
 			width: fit-content;
 			height: fit-content;
 		}
 
 		.ScheduleUI .timescale th.time {
-			font-size: smaller;
 			text-align: center;
 			background-color: var(--header-bg-color);
 			border-color: var(--border-color);
@@ -63,7 +59,6 @@
 		}
 
 		.ScheduleUI .timescale td.time {
-			font-size: smaller;
 			text-align: center;
 			background-color: var(--header-bg-color);
 			border-color: var(--border-color);
@@ -86,10 +81,8 @@
 		.ScheduleUI div.timeline {
 			padding: 0;
 			margin: 0;
-			display: flex;
-			flex-wrap: nowrap;
-			flex-direction: row;
 			width: fit-content;
+			position: relative;
 		}
 
 		.ScheduleUI .timeline td.grid.selected {
@@ -116,7 +109,8 @@
 			border-color: var(--border-color);
 			border-width: 1px;
 			border-bottom-style: solid;
-			width: 40px;
+			padding: 0;
+			width: 48px;
 			height: 80px;
 			left: 0px;
 			z-index: 90;
@@ -133,6 +127,14 @@
 		.ScheduleUI .timeline td.grid:nth-child(even) {
 			border-right-style: dashed;
 		}
+
+		.ScheduleUI .timeline div.workunit {
+			position: relative;
+			background-color: #4da;
+			border-style: solid;
+			border-width: 1px;
+			height: 78px;
+		}
 	</style>
 </head>
 
@@ -145,6 +147,30 @@
 
 </body>
 <script>
+	class WorkUnitUI {
+		constructor(parent, plan_display_name, plan_id, start_minute, span_minute, grid_minute, snap_width) {
+			let workunit_ui = document.createElement("div");
+			let left = snap_width * start_minute / grid_minute;
+			console.log(start_minute)
+			console.log(grid_minute)
+			workunit_ui.className = 'workunit';
+			workunit_ui.style.left = (left - 49 * 48 - 24 - 1).toString() + 'px';
+			workunit_ui.style.width = ((span_minute / grid_minute) * (snap_width) - 2).toString() + 'px';
+			workunit_ui.addEventListener('mouseleave', event => {
+				event.target.style.border = '1px solid black';
+			});
+			workunit_ui.addEventListener('mousedown', event => {
+				event.target.style.border = '1px solid lime';
+				event.target.style.cursor = 'move';
+			});
+			workunit_ui.addEventListener('mouseup', e => {
+				event.target.style.border = '1px solid black';
+				event.target.style.cursor = 'move';
+			});
+			parent.appendChild(workunit_ui);
+		}
+	}
+
 	class TimelineUI {
 		static #SortPair(lhv, rhv) {
 			return (lhv < rhv) ? [lhv, rhv] : [rhv, lhv];
@@ -152,7 +178,9 @@
 		constructor(parent, index, name, grid_count, grid_width, grid_height, selected_callback) {
 			let timeline = document.createElement("tr");
 			timeline.className = 'timeline';
-			this.dom = timeline
+			this.dom = timeline;
+			this.grid_count = grid_count;
+			this.grid_width = grid_width;
 			this.index = index;
 			this.dragging_item = null;
 			this.is_dragging = false;
@@ -161,6 +189,7 @@
 			this.index_of_pointer = null;
 			this.selected_callback = selected_callback;
 			this.items = new Array(grid_count);
+			this.works = new Array();
 			{
 				let time = document.createElement("th")
 				time.className = "time";
@@ -223,21 +252,24 @@
 			for (let i = start_index; i <= end_index; i++) {
 				this.items[i].classList.add("selected");
 			}
-		};
+		}
 		#unselectCells(lhv_index, rhv_index) {
 			let [start_index, end_index] = TimelineUI.#SortPair(lhv_index, rhv_index);
 			for (let i = start_index; i <= end_index; i++) {
 				this.items[i].classList.remove("selected");
 			}
-		};
+		}
 		#dragOut() {
 			this.#unselectCells(this.drag_start_index, this.index_of_pointer);
 			if (this.selected_callback) {
-				let [start_index, end_index] = TimelineUI.#SortPair(this.drag_start_index, this.index_of_pointer)
+				let [start_index, end_index] = TimelineUI.#SortPair(this.drag_start_index, this.index_of_pointer);
 				this.selected_callback(this.index, start_index, end_index);
 			}
-		};
+		}
 
+		addWork() {
+			this.works.push(new WorkUnitUI(this.dom, "test", 1, 30, 60, 24 * 60 / this.grid_count, this.grid_width));
+		}
 	}
 
 	class ScheduleUI {
@@ -250,16 +282,16 @@
 			let timescale = document.createElement("tr");
 			timescale.className = 'timescale';
 			{
-				let time = document.createElement("th")
+				let time = document.createElement("th");
 				time.className = "time";
 				time.innerText = "Name";
 				timescale.appendChild(time)
 			}
 			for (let i = 0; i < grid_count; i++) {
-				let time = document.createElement("td")
+				let time = document.createElement("td");
 				time.className = "time";
 				time.innerText = ScheduleUI.#MinuteToTimeString(i * grid_minute);
-				timescale.appendChild(time)
+				timescale.appendChild(time);
 			}
 			return timescale;
 		}
@@ -270,12 +302,12 @@
 			const grid_minute = Math.floor(60 / division);
 			const snap_width = 48;
 			const grid_count = division * 24;
-			let schedule_ui = document.createElement("div")
-			let timetable = document.createElement("table")
+			let schedule_ui = document.createElement("div");
+			let timetable = document.createElement("table");
 			schedule_ui.className = "ScheduleUI";
 			timetable.className = "ScheduleUI";
 			let timescale = ScheduleUI.#ConstructTimescale(grid_count, snap_width, grid_minute);
-			timetable.appendChild(timescale)
+			timetable.appendChild(timescale);
 			this.timelines = new Array();
 			this.timelines.push(new TimelineUI(timetable, 0, "AAA", grid_count, snap_width, 80, selected_callback));
 			this.timelines.push(new TimelineUI(timetable, 1, "BBB", grid_count, snap_width, 80, selected_callback));
@@ -290,7 +322,7 @@
 						e_posx += obj.offsetLeft - obj.scrollLeft;
 					} while (obj = obj.offsetParent);
 				}
-				let snap_x = Math.floor((x - e_posx) / snap_width) * snap_width
+				let snap_x = Math.floor((x - e_posx) / snap_width) * snap_width;
 				if (this.dragging_workitem != null) {
 					this.dragging_workitem.style.left = snap_x.toString() + 'px';
 				}
@@ -302,43 +334,18 @@
 			schedule_ui.appendChild(timetable);
 			parent.appendChild(schedule_ui);
 		}
-		AddPlan(plan_display_name, plan_id, start_minute, span_minute) {
-			work_data = work_infos[i].dataset;
-			let plan = document.createElement("div");
-			plan.style.left = (i * snap_width).toString() + 'px';
-			plan.style.width = (snap_width - 1).toString() + 'px';
-			plan.addEventListener('mouseover', e => {
-				if (dragging_workitem == null) {
-					e.target.style.border = '1px solid lime';
-					e.target.style.cursor = 'move';
-				}
-			});
-			plan.addEventListener('mouseleave', e => {
-				if (dragging_workitem != null) {
-					if (dragging_workitem === e.target) {
-						return;
-					}
-				}
-				e.target.style.border = '1px solid black';
-			});
-			plan.addEventListener('mousedown', e => {
-				dragging_workitem = e.target;
-				drag_offset_x = e.offsetX;
-			});
-			plan.addEventListener('mouseup', e => {
-				dragging_workitem = null;
-				drag_offset_x = null;
-			});
+		addWork() {
+			this.timelines[0].addWork();
 		}
-
 	}
 	let view = document.getElementById("view");
 	selected_callback = function (timeline_index, start_index, end_index) {
 		view.innerText = "[" + timeline_index.toString() + "]" + start_index.toString() + ":" + end_index.toString();
 	};
 
-	parent = document.getElementById("holder");
-	schedule_ui = new ScheduleUI(parent, selected_callback);
+	let parent = document.getElementById("holder");
+	let schedule_ui = new ScheduleUI(parent, selected_callback);
+	schedule_ui.addWork();
 </script>
 
 </html>
