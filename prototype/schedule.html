@@ -60,11 +60,14 @@
 
 		.ScheduleUI .timescale td.time {
 			text-align: center;
+			font-size: 12px;
 			background-color: var(--header-bg-color);
 			border-color: var(--border-color);
 			border-width: 1px;
 			border-bottom-style: solid;
 			border-top-style: solid;
+			min-width: 47px;
+			padding: 0;
 			position: sticky;
 			top: 0;
 			z-index: 91;
@@ -154,7 +157,8 @@
 			console.log(start_minute)
 			console.log(grid_minute)
 			workunit_ui.className = 'workunit';
-			workunit_ui.style.left = (left - 49 * 48 - 24 - 1).toString() + 'px';
+			workunit_ui.innerText = plan_display_name;
+			workunit_ui.style.left = (left - 48 * 48).toString() + 'px';
 			workunit_ui.style.width = ((span_minute / grid_minute) * (snap_width) - 2).toString() + 'px';
 			workunit_ui.addEventListener('mouseleave', event => {
 				event.target.style.border = '1px solid black';
@@ -167,7 +171,11 @@
 				event.target.style.border = '1px solid black';
 				event.target.style.cursor = 'move';
 			});
+			this.workunit_ui = workunit_ui;
 			parent.appendChild(workunit_ui);
+		}
+		SetHeight(new_height) {
+			this.workunit_ui.style.height = new_height.toString() + 'px';
 		}
 	}
 
@@ -268,7 +276,13 @@
 		}
 
 		addWork() {
-			this.works.push(new WorkUnitUI(this.dom, "test", 1, 30, 60, 24 * 60 / this.grid_count, this.grid_width));
+			this.works.push(new WorkUnitUI(this.dom, "test1", 1, 30, 60, 24 * 60 / this.grid_count, this.grid_width));
+			this.works.push(new WorkUnitUI(this.dom, "test2", 2, 45, 75, 24 * 60 / this.grid_count, this.grid_width));
+			this.works.push(new WorkUnitUI(this.dom, "test3", 3, 30, 120, 24 * 60 / this.grid_count, this.grid_width));
+			this.works.push(new WorkUnitUI(this.dom, "test4", 4, 90, 60, 24 * 60 / this.grid_count, this.grid_width));
+			for (let work of this.works) {
+				work.SetHeight(80 / this.works.length - 2);
+			}
 		}
 	}
 
