@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        body {
+            background: white;
+            background-image:
+                linear-gradient(90deg, rgba(0, 0, 0, .1) 1px, transparent 1px),
+                linear-gradient(rgba(0, 0, 0, .1) 1px, transparent 1px);
+            background-size: 32px 32px;
+        }
+
+        #draggable {
+            width: 200px;
+            height: 200px;
+            background: red;
+            position: absolute;
+            cursor: move;
+        }
+
+        .resize-handle {
+            width: 8px;
+            height: 8px;
+            border: 1px solid black;
+            background: white;
+            position: absolute;
+            /* 初期状態で非表示にする */
+            visibility: hidden;
+            cursor: se-resize;
+        }
+
+        .resize-handle-left {
+            /* 要素の左側の境界線上の中点に配置 */
+            top: calc(50% - 5px);
+            left: -5px;
+        }
+
+        .resize-handle-right {
+            /* 要素の右側の境界線上の中点に配置 */
+            top: calc(50% - 5px);
+            left: calc(100% - 5px);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="draggable">
+        Drag me
+    </div>
+
+    <script>
+        class DraggableElement {
+            constructor(element) {
+                this.element = element;
+                this.currentState = "none";
+
+                this.createResizeHandles();
+
+                this.element.onmousedown = this.dragMouseDown.bind(this);
+                this.resizeHandleLeft.onmousedown = this.resizeMouseDownLeft.bind(this);
+                this.resizeHandleRight.onmousedown = this.resizeMouseDownRight.bind(this);
+                this.element.addEventListener('mouseenter', this.showResizeHandles.bind(this));
+                this.element.addEventListener('mouseleave', this.hideResizeHandles.bind(this));
+            }
+
+            createResizeHandles() {
+                this.resizeHandleLeft = document.createElement('div');
+                this.resizeHandleLeft.className = "resize-handle resize-handle-left";
+                this.element.appendChild(this.resizeHandleLeft);
+
+                this.resizeHandleRight = document.createElement('div');
+                this.resizeHandleRight.className = "resize-handle resize-handle-right";
+                this.element.appendChild(this.resizeHandleRight);
+            }
+
+            showResizeHandles() {
+                this.resizeHandleLeft.style.visibility = "visible";
+                this.resizeHandleRight.style.visibility = "visible";
+            }
+
+            hideResizeHandles() {
+                this.resizeHandleLeft.style.visibility = "hidden";
+                this.resizeHandleRight.style.visibility = "hidden";
+            }
+
+            dragMouseDown(e) {
+                this.handleMouseDown("dragging", this.elementDrag, e);
+            }
+
+            resizeMouseDownLeft(e) {
+                this.handleMouseDown("resizingLeft", this.resizeElementLeft, e);
+            }
+
+            resizeMouseDownRight(e) {
+                this.handleMouseDown("resizingRight", this.resizeElementRight, e);
+            }
+
+            handleMouseDown(action, actionCallback, e) {
+                e = e || window.event;
+                e.preventDefault();
+
+                if (this.currentState === "none") {
+                    this.startX = e.clientX;
+                    this.currentState = action;
+
+                    document.onmouseup = this.closeElementAction.bind(this);
+                    document.onmousemove = actionCallback.bind(this);
+                }
+            }
+
+            elementDrag(e) {
+                e.preventDefault();
+                const deltaX = this.startX - e.clientX;
+                this.startX = e.clientX;
+                this.element.style.left = (this.element.offsetLeft - deltaX) + "px";
+            }
+
+            resizeElementLeft(e) {
+                e.preventDefault();
+                const deltaX = this.startX - e.clientX;
+                this.startX = e.clientX;
+                this.element.style.width = (this.element.offsetWidth + deltaX) + "px";
+                this.element.style.left = (this.element.offsetLeft - deltaX) + "px";
+            }
+
+            resizeElementRight(e) {
+                e.preventDefault();
+                const deltaX = this.startX - e.clientX;
+                this.startX = e.clientX;
+                this.element.style.width = (this.element.offsetWidth - deltaX) + "px";
+            }
+
+            closeElementAction() {
+                this.currentState = "none";
+                document.onmouseup = null;
+                document.onmousemove = null;
+            }
+        }
+
+        const draggableElement = new DraggableElement(document.getElementById('draggable'));
+    </script>
+</body>
+
+</html>
