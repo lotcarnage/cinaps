@@ -55,11 +55,21 @@
 
                 this.createResizeHandles();
 
-                this.element.onmousedown = this.dragMouseDown.bind(this);
-                this.resizeHandleLeft.onmousedown = this.resizeMouseDownLeft.bind(this);
-                this.resizeHandleRight.onmousedown = this.resizeMouseDownRight.bind(this);
-                this.element.addEventListener('mouseenter', this.showResizeHandles.bind(this));
-                this.element.addEventListener('mouseleave', this.hideResizeHandles.bind(this));
+                this.dragMouseDown = this.dragMouseDown.bind(this);
+                this.resizeMouseDownLeft = this.resizeMouseDownLeft.bind(this);
+                this.resizeMouseDownRight = this.resizeMouseDownRight.bind(this);
+                this.showResizeHandles = this.showResizeHandles.bind(this);
+                this.hideResizeHandles = this.hideResizeHandles.bind(this);
+                this.elementDrag = this.elementDrag.bind(this);
+                this.resizeElementLeft = this.resizeElementLeft.bind(this);
+                this.resizeElementRight = this.resizeElementRight.bind(this);
+                this.closeElementAction = this.closeElementAction.bind(this);
+
+                this.element.addEventListener('mousedown', this.dragMouseDown);
+                this.resizeHandleLeft.addEventListener('mousedown', this.resizeMouseDownLeft);
+                this.resizeHandleRight.addEventListener('mousedown', this.resizeMouseDownRight);
+                this.element.addEventListener('mouseenter', this.showResizeHandles);
+                this.element.addEventListener('mouseleave', this.hideResizeHandles);
             }
 
             createResizeHandles() {
@@ -101,9 +111,10 @@
                 if (this.currentState === "none") {
                     this.startX = e.clientX;
                     this.currentState = action;
+                    this.currentActionCallback = actionCallback;
 
-                    document.onmouseup = this.closeElementAction.bind(this);
-                    document.onmousemove = actionCallback.bind(this);
+                    document.addEventListener('mouseup', this.closeElementAction);
+                    document.addEventListener('mousemove', this.currentActionCallback);
                 }
             }
 
@@ -131,8 +142,8 @@
 
             closeElementAction() {
                 this.currentState = "none";
-                document.onmouseup = null;
-                document.onmousemove = null;
+                document.removeEventListener('mouseup', this.closeElementAction);
+                document.removeEventListener('mousemove', this.currentActionCallback);
             }
         }
 
