@@ -28,17 +28,15 @@
             /* 初期状態で非表示にする */
             visibility: hidden;
             cursor: se-resize;
+            /* 要素の境界線上の中点に配置 */
+            top: calc(50% - 5px);
         }
 
         .resize-handle-left {
-            /* 要素の左側の境界線上の中点に配置 */
-            top: calc(50% - 5px);
             left: -5px;
         }
 
         .resize-handle-right {
-            /* 要素の右側の境界線上の中点に配置 */
-            top: calc(50% - 5px);
             left: calc(100% - 5px);
         }
     </style>
