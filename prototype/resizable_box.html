@@ -12,9 +12,6 @@
         }
 
         .draggable {
-            width: 200px;
-            height: 200px;
-            background: red;
             position: absolute;
             cursor: move;
             border: 1px solid black;
@@ -52,11 +49,12 @@
 
     <script>
         class DraggableElement {
-            constructor(element, height = '200px', color = 'red') {
+            constructor(element, width = '200px', height = '200px', color = 'red') {
                 this.element = element;
                 this.currentState = "none";
 
                 this.element.classList.add("draggable");
+                this.element.style.width = width;
                 this.element.style.height = height;
                 this.element.style.background = color;
 
@@ -154,8 +152,8 @@
             }
         }
 
-        const draggableElement1 = new DraggableElement(document.getElementById('draggable1'), '300px', 'blue');
-        const draggableElement2 = new DraggableElement(document.getElementById('draggable2'), '250px', 'purple');
+        const draggableElement1 = new DraggableElement(document.getElementById('draggable1'), '300px', '300px', 'blue');
+        const draggableElement2 = new DraggableElement(document.getElementById('draggable2'), '250px', '250px', 'purple');
     </script>
 </body>
 
