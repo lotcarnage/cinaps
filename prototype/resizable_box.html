@@ -11,12 +11,14 @@
             background-size: 32px 32px;
         }
 
-        #draggable {
+        .draggable {
             width: 200px;
             height: 200px;
             background: red;
             position: absolute;
             cursor: move;
+            border: 1px solid black;
+            box-sizing: border-box;
         }
 
         .resize-handle {
@@ -25,10 +27,8 @@
             border: 1px solid black;
             background: white;
             position: absolute;
-            /* 初期状態で非表示にする */
             visibility: hidden;
             cursor: se-resize;
-            /* 要素の境界線上の中点に配置 */
             top: calc(50% - 5px);
         }
 
@@ -43,15 +43,22 @@
 </head>
 
 <body>
-    <div id="draggable">
+    <div id="draggable1">
         Drag me
+    </div>
+    <div id="draggable2">
+        Drag me too
     </div>
 
     <script>
         class DraggableElement {
-            constructor(element) {
+            constructor(element, height = '200px', color = 'red') {
                 this.element = element;
                 this.currentState = "none";
+
+                this.element.classList.add("draggable");
+                this.element.style.height = height;
+                this.element.style.background = color;
 
                 this.createResizeHandles();
 
@@ -147,7 +154,8 @@
             }
         }
 
-        const draggableElement = new DraggableElement(document.getElementById('draggable'));
+        const draggableElement1 = new DraggableElement(document.getElementById('draggable1'), '300px', 'blue');
+        const draggableElement2 = new DraggableElement(document.getElementById('draggable2'), '250px', 'purple');
     </script>
 </body>
 
