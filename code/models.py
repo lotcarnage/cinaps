@@ -22,6 +22,7 @@ class Member(Base):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     login_name = db.Column(db.String(50), unique=True)
     password = db.Column(db.String(50))
+    password_salt = db.Column(db.String(32))
     display_name = db.Column(db.String(50))
     create_at = db.Column(db.DateTime)
 

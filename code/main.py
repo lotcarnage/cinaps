@@ -67,8 +67,11 @@ def index():
 def login():
     login_name = flask.request.form.get('login_name')
     password = flask.request.form.get('password')
-    member = Member.query.filter_by(login_name=login_name, password=password).first()
+    member = Member.query.filter_by(login_name=login_name).first()
     if member is None:
+        return flask.redirect('/')
+    hashed_password = _hash_password(password, member.password_salt)
+    if member.password != hashed_password:
         return flask.redirect('/')
     response = flask.make_response(flask.redirect(flask.url_for('home')))
     max_age = 60 * 30  # 30 minute
@@ -236,12 +239,28 @@ def delete_work():
     return flask.redirect('/calendar')
 
 
+def _make_salt():
+    import secrets
+    return secrets.token_hex(32)
+
+
+def _hash_password(password: str, salt: str) -> str:
+    import hashlib
+    return hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt.encode('utf-8'), 2)
+
+
+def _new_member(login_name: str, password: str, display_name: str) -> Member:
+    salt = _make_salt()
+    hashed_password = _hash_password(password, salt)
+    return Member(login_name=login_name, password=hashed_password, display_name=display_name, password_salt=salt)
+
+
 def _init_db():
-    user = Member.query.filter_by(login_name='testuser', password='hoge').first()
+    user = Member.query.filter_by(login_name='test').first()
     if user is None:
-        db.session.add(Member(login_name='testuser', password='hoge', display_name='作業員A'))
-        db.session.add(Member(login_name='test2', password='hoge', display_name='作業員B'))
-        db.session.add(Member(login_name='test3', password='hoge', display_name='作業員C'))
+        db.session.add(_new_member(login_name='test', password='test', display_name='作業員A'))
+        db.session.add(_new_member(login_name='test2', password='hoge', display_name='作業員B'))
+        db.session.add(_new_member(login_name='test3', password='hoge', display_name='作業員C'))
         db.session.commit()
     return None
 
