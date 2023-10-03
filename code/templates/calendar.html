@@ -103,9 +103,12 @@
     {% endfor %}
 </div>
 
+<form name="date_selector" action="/calendar" method="get">
+    <a><input type="date" name="date" value="{{date}}" onchange="document.date_selector.submit()"></a>
+</form>
 
 <form action="/addwork" method="post">
-    <a><input type="date" name="start_date" value=""></a>
+    <a><input type="date" name="start_date" value="{{date}}" hidden></a>
     <a><input type="time" name="start_time"></a>
     <a><input type="time" name="end_time"></a>
     <select name="task_id">
@@ -131,6 +134,7 @@
         <p class="workname">{{ work.task_name }}
         </p>
         <form class="control" action="/editwork_task" method="post">
+            <input type="date" name="start_date" value="{{date}}" hidden>
             <input type="id" name="work_id" value="{{work.id}}" hidden>
             <select name="task_id">
                 {% for task in tasks %}
@@ -144,6 +148,7 @@
             <button class="update" type="submit">更新</button>
         </form>
         <form class="control" action="/delete_work" method="post">
+            <input type="date" name="start_date" value="{{date}}" hidden>
             <input type="id" name="work_id" value="{{work.id}}" hidden>
             <button class="delete" type="submit">削除</button>
         </form>

@@ -181,12 +181,17 @@ def calendar():
     member_id = flask.request.cookies.get('member_id')
     if session_id is None:
         return flask.redirect('/')
+    target_day = flask.request.args.get('date', '')
+    print(target_day)
+    if target_day == "":
+        target_day = datetime.datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
+    else:
+        target_day = _date_str_to_datetime(target_day)
     member = Member.query.filter_by(id=int(member_id)).first()
     tasks = Task.query.all()
-    today = datetime.datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
-    next_day = today + datetime.timedelta(days=1)
+    next_day = target_day + datetime.timedelta(days=1)
     works = Work.query.filter_by(member_id=member.id).all()
-    works = [work for work in works if (today <= work.start_datetime < next_day)]
+    works = [work for work in works if (target_day <= work.start_datetime < next_day)]
     task_name_dict = {task.id: task.subject for task in tasks}
     for work in works:
         work.task_name = task_name_dict[work.task_id]
@@ -194,7 +199,7 @@ def calendar():
         work.end_time = _extract_time_str(work.start_datetime + datetime.timedelta(minutes=work.span_minute))
     works = sorted(works, key=lambda x: x.start_time)
     my_tasks = [task for task in tasks if task.asigned_member_id == member.id]
-    return flask.render_template('calendar.html', tasks=my_tasks, works=works)
+    return flask.render_template('calendar.html', tasks=my_tasks, works=works, date=_extract_date_str(target_day))
 
 
 @app.route('/addwork', methods=['post'])
@@ -212,13 +217,15 @@ def addwork():
     new_work = Work(task_id=task_id, member_id=task.asigned_member_id, start_datetime=s_d, span_minute=span_minute)
     db.session.add(new_work)
     db.session.commit()
-    return flask.redirect('/calendar')
+    print(start_date)
+    return flask.redirect(flask.url_for('calendar', date=start_date))
 
 
 @app.route('/editwork_task', methods=['post'])
 def editwork_task():
     work_id = int(flask.request.form.get('work_id'))
     task_id = flask.request.form.get('task_id')
+    start_date = flask.request.form.get('start_date')
     work = Work.query.filter_by(id=work_id).first()
     if task_id is None:
         return flask.redirect('/calendar')
@@ -227,7 +234,8 @@ def editwork_task():
     else:
         work.task_id = task_id
     db.session.commit()
-    return flask.redirect('/calendar')
+    print(start_date)
+    return flask.redirect(flask.url_for('calendar', date=start_date))
 
 
 @app.route('/delete_work', methods=['post'])
