@@ -19,11 +19,11 @@ class TaskState(enum.Enum):
 
 class Member(Base):
     __tablename__ = 'members'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    login_name = db.Column(db.String(50), unique=True)
-    password = db.Column(db.String(50))
-    password_salt = db.Column(db.String(32))
-    display_name = db.Column(db.String(50))
+    id:int = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    login_name:str = db.Column(db.String(50), unique=True)
+    password:str = db.Column(db.String(50))
+    password_salt:str = db.Column(db.String(32))
+    display_name:str = db.Column(db.String(50))
     create_at = db.Column(db.DateTime)
 
 

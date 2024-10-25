@@ -2,11 +2,12 @@ from models import Member, Fiscal, Project, Task, Work
 import flask
 import datetime
 from flask_sqlalchemy_wrapper import db
+from cinaps_core import CinapsCore
 
 app = flask.Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
 db.init_app(app)
-
+cinaps = CinapsCore(db)
 
 def _date_str_to_datetime(date_str: str) -> datetime.datetime | None:
     if date_str == "":
@@ -67,11 +68,8 @@ def index():
 def login():
     login_name = flask.request.form.get('login_name')
     password = flask.request.form.get('password')
-    member = Member.query.filter_by(login_name=login_name).first()
+    member : Member | None = CinapsCore.Login(login_name, password)
     if member is None:
-        return flask.redirect('/')
-    hashed_password = _hash_password(password, member.password_salt)
-    if member.password != hashed_password:
         return flask.redirect('/')
     response = flask.make_response(flask.redirect(flask.url_for('home')))
     max_age = 60 * 30  # 30 minute
@@ -87,7 +85,7 @@ def home():
     member_id = flask.request.cookies.get('member_id')
     if session_id is None:
         return flask.redirect('/')
-    member = Member.query.filter_by(id=member_id).first()
+    member = cinaps.FindMemberById(member_id)
     projects = Project.query.all()
     tasks = _load_tasks()
     my_asigned_tasks = [task for task in tasks if task.asigned_member_id == member.id]
@@ -266,10 +264,10 @@ def _new_member(login_name: str, password: str, display_name: str) -> Member:
 def _init_db():
     user = Member.query.filter_by(login_name='test').first()
     if user is None:
-        db.session.add(_new_member(login_name='test', password='test', display_name='作業員A'))
-        db.session.add(_new_member(login_name='test2', password='hoge', display_name='作業員B'))
-        db.session.add(_new_member(login_name='test3', password='hoge', display_name='作業員C'))
-        db.session.commit()
+        cinaps.AddMember(login_name='test', password='test', display_name='作業員A')
+        cinaps.AddMember(login_name='test2', password='hoge', display_name='作業員B')
+        cinaps.AddMember(login_name='test3', password='hoge', display_name='作業員C')
+        cinaps.Commit()
     return None
 
 
