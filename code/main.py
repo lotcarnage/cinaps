@@ -9,6 +9,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
 db.init_app(app)
 cinaps = CinapsCore(db)
 
+
 def _date_str_to_datetime(date_str: str) -> datetime.datetime | None:
     if date_str == "":
         return None
@@ -68,7 +69,7 @@ def index():
 def login():
     login_name = flask.request.form.get('login_name')
     password = flask.request.form.get('password')
-    member : Member | None = CinapsCore.Login(login_name, password)
+    member: Member | None = CinapsCore.Login(login_name, password)
     if member is None:
         return flask.redirect('/')
     response = flask.make_response(flask.redirect(flask.url_for('home')))

@@ -2,6 +2,7 @@ from flask_sqlalchemy import SQLAlchemy
 from models import Member, Fiscal, Project, Task, Deliverable, Work
 import datetime
 
+
 def _make_salt():
     import secrets
     return secrets.token_hex(32)
@@ -19,7 +20,7 @@ def _new_member(login_name: str, password: str, display_name: str) -> Member:
 
 
 class CinapsCore:
-    def Login(login_name:str, password:str) -> Member | None:
+    def Login(login_name: str, password: str) -> Member | None:
         member = Member.query.filter_by(login_name=login_name).first()
         if member is None:
             return None
@@ -28,39 +29,37 @@ class CinapsCore:
             return None
         return member
 
-    def __init__(self, db:SQLAlchemy) -> None:
+    def __init__(self, db: SQLAlchemy) -> None:
         self.__db = db
         return None
 
-    def AddMember(self, login_name:str, password:str, display_name=str) -> None:
+    def AddMember(self, login_name: str, password: str, display_name=str) -> None:
         self.__db.session.add(_new_member(login_name, password, display_name))
         return None
-    
-    def AddProject(self, project_name:str, start_datetime:datetime.datetime, expected_finish_datetime:datetime.datetime) -> None:
+
+    def AddProject(self, project_name: str, start_datetime: datetime.datetime, expected_finish_datetime: datetime.datetime) -> None:
         new_project = Project(display_name=project_name, start_date=start_datetime, expected_finish_date=expected_finish_datetime)
         self.__db.session.add(new_project)
         return None
 
-    def AddTask(self, subject:str, description:str | None, parent_project_id: int, assigned_member_id:int | None) -> None:
+    def AddTask(self, subject: str, description: str | None, parent_project_id: int, assigned_member_id: int | None) -> None:
         new_task = Task(subject=subject, description=description, parent_project_id=parent_project_id, asigned_member_id=assigned_member_id)
         self.__db.session.add(new_task)
         return None
 
-    def AddDeliverable(self, label:str, description:str | None, parent_project_id: int, production_task_id:int | None) -> None:
+    def AddDeliverable(self, label: str, description: str | None, parent_project_id: int, production_task_id: int | None) -> None:
         new_task = Deliverable(label=label, description=description, parent_project_id=parent_project_id, production_task_id=production_task_id)
         self.__db.session.add(new_task)
         return None
 
-    def FindMemberById(self, member_id:int) -> Member | None:
+    def FindMemberById(self, member_id: int) -> Member | None:
         member = Member.query.filter_by(id=member_id).first()
         return member
 
-    def FindTaskById(self, task_id:int) -> Task | None:
+    def FindTaskById(self, task_id: int) -> Task | None:
         task = Task.query.filter_by(id=int(task_id)).first()
         return task
 
     def Commit(self) -> None:
         self.__db.session.commit()
         return None
-
-
