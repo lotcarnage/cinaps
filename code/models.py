@@ -61,6 +61,21 @@ class Task(Base):
     limit_datetime = db.Column(db.DateTime)
 
 
+class Deliverable(Base):
+    __tablename__ = 'deliverables'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    parent_project_id = db.Column(db.Integer)
+    label = db.Column(db.String(50))
+    description = db.Column(db.String(50))
+    production_task_id = db.Column(db.Integer, nullable=True)
+
+
+class TaskInputDeliverable(Base):
+    __tablename__ = 'taskinputdeliverables'
+    task_id = db.Column(db.Integer, primary_key=True)
+    deliverable_id = db.Column(db.Integer, primary_key=True)
+
+
 class Work(Base):
     __tablename__ = 'works'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
