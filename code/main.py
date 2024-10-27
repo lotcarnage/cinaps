@@ -116,9 +116,8 @@ def addproject():
     expected_finish_date = flask.request.form.get('expected_finish_date')
     start_date = _date_str_to_datetime(start_date)
     expected_finish_date = _date_str_to_datetime(expected_finish_date)
-    new_project = Project(display_name=project_name, start_date=start_date, expected_finish_date=expected_finish_date)
-    db.session.add(new_project)
-    db.session.commit()
+    cinaps.AddProject(project_name, start_date, expected_finish_date)
+    cinaps.Commit()
     return flask.redirect('/projects')
 
 
@@ -139,8 +138,7 @@ def addtask():
     subject = flask.request.form.get('subject')
     description = flask.request.form.get('description')
     asigned_member_id = flask.request.form.get('asigned_member_id')
-    new_task = Task(subject=subject, description=description, parent_project_id=project_id, asigned_member_id=asigned_member_id)
-    db.session.add(new_task)
+    cinaps.AddTask(subject, description, project_id, asigned_member_id)
     db.session.commit()
     return flask.redirect(f'/projectedit?id={project_id}')
 
@@ -161,7 +159,7 @@ def updatetask():
     man_hours = 0 if man_hours is None else man_hours
     man_minutes = 0 if man_minutes is None else man_minutes
     man_minute = int(man_days) * 8 * 60 + int(man_hours) * 60 + int(man_minutes)
-    task = Task.query.filter_by(id=int(task_id)).first()
+    task = cinaps.FindTaskById(int(task_id))
     task.subject = subject
     task.description = description
     task.asigned_member_id = asigned_member_id
