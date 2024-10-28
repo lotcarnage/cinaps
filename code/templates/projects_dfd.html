@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block head %}
+<title>Projects</title>
+<link rel="stylesheet" href="/static/css/basic.css" />
+<link rel="stylesheet" href="/static/css/projects.css" />
+{% endblock %}
+
+{% block body %}
+<p><a href="/home">Home</a></p>
+
+<div>
+    {% for deliverable in dfd_deliverables %}
+    <div class="taskcard">成果物：{{deliverable.label}}</div>
+    {% endfor %}
+</div>
+
+<div>
+    {% for task in dfd_tasks %}
+    <div class="taskcard">タスク：{{task.subject}}</div>
+    {% endfor %}
+</div>
+
+{% endblock %}

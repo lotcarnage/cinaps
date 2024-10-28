@@ -1,5 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
-from models import Member, Fiscal, Project, Task, Deliverable, Work
+from models import Member, Fiscal, Project, Task, Deliverable, Work, TaskInputDeliverable
 import datetime
 
 
@@ -59,6 +59,15 @@ class CinapsCore:
     def FindTaskById(self, task_id: int) -> Task | None:
         task = Task.query.filter_by(id=int(task_id)).first()
         return task
+
+    def GetAllTask(self) -> list[Task]:
+        return Task.query.all()
+
+    def GetAllDeliverables(self) -> list[Deliverable]:
+        return Deliverable.query.all()
+
+    def GetAllTaskInputDeliverable(self) -> list[TaskInputDeliverable]:
+        return TaskInputDeliverable.query.all()
 
     def Commit(self) -> None:
         self.__db.session.commit()

@@ -23,9 +23,35 @@ div#addtaskform p {
     margin: 2px;
 }
 
+div#adddeliverableform {
+    background-color: #236;
+    width: fit-content;
+    text-align: center;
+    width: 16em;
+    padding-left: 1em;
+    padding-right: 1em;
+    border-radius: 8px;
+}
+
+div#adddeliverableform p {
+    margin: 2px;
+}
+
 button#addtask {
     color: white;
     background-color: #3b9;
+    margin: 10px auto;
+    border: 0;
+    width: 200px;
+    height: 3em;
+    outline: none;
+    text-align: center;
+    border-radius: 25px;
+}
+
+button#adddeliverable {
+    color: white;
+    background-color: #fb3;
     margin: 10px auto;
     border: 0;
     width: 200px;

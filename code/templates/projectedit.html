@@ -38,7 +38,20 @@
         <button id="addtask" type="submit">タスク追加</button>
     </form>
 </div>
+<div id="adddeliverableform">
+    <form id="adddeliverable" action="/adddeliverable" method="post">
+        <input type="id" name="project_id" value="{{ project.id }}" hidden>
+        <p><input type="text" name="label"></p>
+        <p><input type="text" name="description"></p>
+        <button id="adddeliverable" type="submit">成果物追加</button>
+    </form>
+</div>
 
+<div>
+    {% for deliverable in deliverables %}
+    <div class="taskcard">成果物：{{deliverable.label}}</div>
+    {% endfor %}
+</div>
 
 {% include 'taskcard.html' %}
 

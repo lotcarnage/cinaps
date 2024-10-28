@@ -1,8 +1,9 @@
-from models import Member, Fiscal, Project, Task, Work
+from models import Member, Fiscal, Project, Task, Work, Deliverable
 import flask
 import datetime
 from flask_sqlalchemy_wrapper import db
 from cinaps_core import CinapsCore
+import cinaps_dfd
 
 app = flask.Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
@@ -105,6 +106,32 @@ def projects():
     return flask.render_template('projects.html', projects=projects)
 
 
+@app.route('/projects_dfd', methods=['get'])
+def projects_dfd():
+    deliverables = cinaps.GetAllDeliverables()
+    tasks = cinaps.GetAllTask()
+    task_input_deliverables = cinaps.GetAllTaskInputDeliverable()
+    dfd_tasks = [cinaps_dfd.DfdTask(task, task_input_deliverables) for task in tasks]
+    dfd_deliverables = [cinaps_dfd.DfdDeliverable(deliverable) for deliverable in deliverables]
+    task_to_deliverable_edges: list[cinaps_dfd.DfdTaskToDeliverable] = []
+    for dfd_task in dfd_tasks:
+        edges = [cinaps_dfd.DfdTaskToDeliverable(dfd_task.id, deliverable_id) for deliverable_id in dfd_task.depend_deliverable_ids]
+        task_to_deliverable_edges.extend(edges)
+    deliverable_to_task_edges = [cinaps_dfd.DfdTaskToDeliverable(dfd_deliverable.id, dfd_deliverable.production_task_id) for dfd_deliverable in dfd_deliverables]
+    projects = Project.query.all()
+    for project in projects:
+        project.task_count = len(Task.query.filter_by(parent_project_id=project.id).all())
+    for project in projects:
+        project.start_date = _extract_date_str(project.start_date)
+        project.expected_finish_date = _extract_date_str(project.expected_finish_date)
+    return flask.render_template(
+        'projects_dfd.html',
+        projects=projects,
+        dfd_tasks=dfd_tasks, dfd_deliverables=dfd_deliverables,
+        task_to_deliverable_edges=task_to_deliverable_edges,
+        deliverable_to_task_edges=deliverable_to_task_edges)
+
+
 @app.route('/newproject', methods=['get'])
 def newproject():
     return flask.render_template('newproject.html')
@@ -127,10 +154,11 @@ def projectedit():
     project_id = flask.request.args.get('id', '')
     project = Project.query.filter_by(id=project_id).first()
     tasks = Task.query.filter_by(parent_project_id=project_id).all()
+    deliverables = Deliverable.query.filter_by(parent_project_id=project_id).all()
     members = Member.query.all()
     tasks = _load_tasks()
     tasks_in_project = [task for task in tasks if task.parent_project_id == int(project_id)]
-    return flask.render_template('projectedit.html', tasks=tasks_in_project, project=project, members=members)
+    return flask.render_template('projectedit.html', tasks=tasks_in_project, project=project, members=members, deliverables=deliverables)
 
 
 @app.route('/addtask', methods=['post'])
@@ -140,6 +168,16 @@ def addtask():
     description = flask.request.form.get('description')
     asigned_member_id = flask.request.form.get('asigned_member_id')
     cinaps.AddTask(subject, description, project_id, asigned_member_id)
+    db.session.commit()
+    return flask.redirect(f'/projectedit?id={project_id}')
+
+
+@app.route('/adddeliverable', methods=['post'])
+def adddeliverable():
+    project_id = flask.request.form.get('project_id')
+    label = flask.request.form.get('label')
+    description = flask.request.form.get('description')
+    cinaps.AddDeliverable(label, description, project_id, None)
     db.session.commit()
     return flask.redirect(f'/projectedit?id={project_id}')
 
