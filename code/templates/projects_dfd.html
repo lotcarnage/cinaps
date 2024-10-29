@@ -3,21 +3,88 @@
 <title>Projects</title>
 <link rel="stylesheet" href="/static/css/basic.css" />
 <link rel="stylesheet" href="/static/css/projects.css" />
+<style>
+    div.grapharea {
+        position: relative;
+    }
+
+    canvas.network {
+        position: absolute;
+        background-color: black;
+    }
+
+    div.dfd_deliverable {
+        border-radius: 4px;
+        background-color: #fff;
+        filter: drop-shadow(2px 2px 2px rgba(0.2, 0.2, 0.2, 0.2));
+        vertical-align: middle;
+        position: absolute;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        margin: 0px;
+    }
+
+    div.dfd_task {
+        border-radius: 4px;
+        background-color: #fff;
+        filter: drop-shadow(2px 2px 2px rgba(0.2, 0.2, 0.2, 0.2));
+        vertical-align: middle;
+        position: absolute;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        margin: 0px;
+    }
+</style>
 {% endblock %}
 
 {% block body %}
 <p><a href="/home">Home</a></p>
 
-<div>
+<div id="dfd_meta" data-num-deliverables="{{dfd_deliverables | length}}" data-num-tasks="{{dfd_tasks | length}}">
+</div>
+<div class="grapharea">
+    <canvas id="network" class="network" width="800px" height="800px"></canvas>
     {% for deliverable in dfd_deliverables %}
-    <div class="taskcard">成果物：{{deliverable.label}}</div>
+    <div class="dfd_deliverable" id="deliverable_{{deliverable.id}}"><span>成果物：{{deliverable.label}}</span></div>
     {% endfor %}
-</div>
-
-<div>
     {% for task in dfd_tasks %}
-    <div class="taskcard">タスク：{{task.subject}}</div>
+    <div class="dfd_task" id="task_{{task.id}}">タスク：{{task.subject}}</div>
     {% endfor %}
 </div>
 
+<script src="https://frogcat.github.io/canvas-arrow/canvas-arrow.js"></script>
+<script>
+    function initialize() {
+        const GRID_SIZE = 16;
+        const numDeliverables = parseInt(document.getElementById("dfd_meta").dataset.numDeliverables);
+        const numTasks = parseInt(document.getElementById("dfd_meta").dataset.numTasks);
+        function SetPosition(element, w, h, left, top) {
+            element.style.left = (GRID_SIZE * left + 1).toString() + 'px';
+            element.style.top = (GRID_SIZE * top + 1).toString() + 'px';
+            element.style.width = (GRID_SIZE * w - 2).toString() + 'px';
+            element.style.height = (GRID_SIZE * h - 2).toString() + 'px';
+        }
+        for (let i = 0; i < numDeliverables; i++) {
+            const element = document.getElementById(`deliverable_${i + 1}`);
+            SetPosition(element, 8, 2, 0, i * 2);
+        }
+        for (let i = 0; i < numTasks; i++) {
+            const element = document.getElementById(`task_${i + 1}`);
+            SetPosition(element, 8, 2, 12, i * 2);
+        }
+
+        const canvas = document.getElementById("network");
+        const context = canvas.getContext("2d");
+        context.beginPath();
+        context.strokeStyle = null;
+        context.fillStyle = "#f00";
+        context.lineWidth = 0;
+        context.arrow(GRID_SIZE * 8, GRID_SIZE * 1, GRID_SIZE * 12, GRID_SIZE * 1, [0, 5, -10, 5, -10, 10]);
+        context.fill();
+        context.stroke();
+    }
+    initialize();
+</script>
 {% endblock %}
