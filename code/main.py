@@ -119,6 +119,7 @@ def projects_dfd():
         task_to_deliverable_edges.extend(edges)
     deliverable_to_task_edges = [cinaps_dfd.DfdTaskToDeliverable(dfd_deliverable.id, dfd_deliverable.production_task_id) for dfd_deliverable in dfd_deliverables]
     projects = Project.query.all()
+    members = Member.query.all()
     for project in projects:
         project.task_count = len(Task.query.filter_by(parent_project_id=project.id).all())
     for project in projects:
@@ -127,6 +128,7 @@ def projects_dfd():
     return flask.render_template(
         'projects_dfd.html',
         projects=projects,
+        members=members,
         dfd_tasks=dfd_tasks, dfd_deliverables=dfd_deliverables,
         task_to_deliverable_edges=task_to_deliverable_edges,
         deliverable_to_task_edges=deliverable_to_task_edges)

@@ -1,0 +1,24 @@
+<form class="taskcard" action="/updatetask" method="post">
+    <input type="id" name="task_id" value="" hidden>
+    <table>
+        <tr>
+            <th>タスク名</th>
+            <td><input type="text" name="subject" value=""></td>
+        </tr>
+        <tr>
+            <th>作業者</th>
+            <td> <select name="asigned_member_id" size="1">
+                    <option value="" selected>未割り当て</option>
+                    {% for member in members %}
+                    <option value="{{member.id}}">{{ member.display_name }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <th>説明</th>
+            <td><input type="text" name="description" value=""></td>
+        </tr>
+    </table>
+    <button id="updatetask" type="submit">更新</button>
+</form>

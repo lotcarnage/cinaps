@@ -10,7 +10,7 @@
 
     canvas.network {
         position: absolute;
-        background-color: black;
+        background-color: #444;
     }
 
     div.dfd_deliverable {
@@ -36,21 +36,38 @@
         align-items: center;
         margin: 0px;
     }
+
+    div.focused {
+        background-color: aquamarine;
+    }
 </style>
 {% endblock %}
 
 {% block body %}
 <p><a href="/home">Home</a></p>
 
+
+{% include 'taskeditor.html' %}
+
 <div id="dfd_meta" data-num-deliverables="{{dfd_deliverables | length}}" data-num-tasks="{{dfd_tasks | length}}">
+</div>
+<div id="task_to_deliverable_edges">
+    {% for edge in task_to_deliverable_edges %}
+    <span data-edge='{"task_id":{{edge.task_id}}, "deliverable_id":{{edge.deliverable_id}}}'></span>
+    {% endfor %}
+</div>
+<div id="deliverable_to_task_edges">
+    {% for edge in deliverable_to_task_edges %}
+    <span data-edge='{"deliverable_id":{{edge.deliverable_id}}, "task_id":{{edge.task_id}}}'></span>
+    {% endfor %}
 </div>
 <div class="grapharea">
     <canvas id="network" class="network" width="800px" height="800px"></canvas>
     {% for deliverable in dfd_deliverables %}
-    <div class="dfd_deliverable" id="deliverable_{{deliverable.id}}"><span>成果物：{{deliverable.label}}</span></div>
+    <div class="dfd_deliverable" id="deliverable_{{deliverable.id}}" tabindex=0><span>成果物：{{deliverable.label}}</span></div>
     {% endfor %}
     {% for task in dfd_tasks %}
-    <div class="dfd_task" id="task_{{task.id}}">タスク：{{task.subject}}</div>
+    <div class="dfd_task" id="task_{{task.id}}" tabindex=0><span>タスク：{{task.subject}}</span></div>
     {% endfor %}
 </div>
 
@@ -68,20 +85,24 @@
         }
         for (let i = 0; i < numDeliverables; i++) {
             const element = document.getElementById(`deliverable_${i + 1}`);
+            element.addEventListener('focus', e => { console.log(e); e.target.classList.add('focused'); });
+            element.addEventListener('blur', e => { console.log(e); e.target.classList.remove('focused'); });
             SetPosition(element, 8, 2, 0, i * 2);
         }
         for (let i = 0; i < numTasks; i++) {
             const element = document.getElementById(`task_${i + 1}`);
+            element.addEventListener('focus', e => { console.log(e); e.target.classList.add('focused'); });
+            element.addEventListener('blur', e => { console.log(e); e.target.classList.remove('focused'); });
             SetPosition(element, 8, 2, 12, i * 2);
         }
 
         const canvas = document.getElementById("network");
         const context = canvas.getContext("2d");
         context.beginPath();
-        context.strokeStyle = null;
+        context.strokeStyle = "#f00";
         context.fillStyle = "#f00";
         context.lineWidth = 0;
-        context.arrow(GRID_SIZE * 8, GRID_SIZE * 1, GRID_SIZE * 12, GRID_SIZE * 1, [0, 5, -10, 5, -10, 10]);
+        context.arrow(GRID_SIZE * 8, GRID_SIZE * 1, GRID_SIZE * 12, GRID_SIZE * 1, [0, 6, -10, 6, -10, 10]);
         context.fill();
         context.stroke();
     }
