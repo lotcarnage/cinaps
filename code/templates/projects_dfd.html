@@ -40,6 +40,37 @@
     div.focused {
         background-color: aquamarine;
     }
+
+    .contextmenu {
+        border-radius: 4px;
+        display: none;
+        position: fixed;
+        left: 0px;
+        top: 0px;
+        width: fit-content;
+        height: fit-content;
+        border: 0px solid #000;
+        background-color: #ddd;
+        filter: drop-shadow(4px 4px 2px rgba(0.2, 0.2, 0.2, 0.2));
+        z-index: 10;
+    }
+
+    .contextmenu ul {
+        padding: 0.5rem;
+        margin: 0px;
+    }
+
+    .contextmenu li {
+        border-radius: 2px;
+        padding: 2px;
+        margin: 2px;
+        cursor: pointer;
+        list-style: none;
+    }
+
+    .contextmenu li:hover {
+        background-color: #aaa;
+    }
 </style>
 {% endblock %}
 
@@ -48,6 +79,30 @@
 
 
 {% include 'taskeditor.html' %}
+
+<div id="contextmenu" class="contextmenu">
+    <ul>
+        <li id="add_deliverable">+成果物追加</li>
+        <li id="add_task">+タスク追加</li>
+    </ul>
+</div>
+
+<div id="task_menu" class="contextmenu">
+    <ul>
+        <li id="change_display_name">+名前の変更</li>
+        <li id="add_input_deliverable">+依存物を追加</li>
+        <li id="add_output_deliverable">+成果物を追加</li>
+        <li id="change_asign_member">+担当者を変更</li>
+    </ul>
+</div>
+
+<div id="deliverable_menu" class="contextmenu">
+    <ul>
+        <li id="change_display_name">+名前の変更</li>
+        <li id="change_production_task">+生成タスクを変更</li>
+    </ul>
+</div>
+
 
 <div id="dfd_meta" data-num-deliverables="{{dfd_deliverables | length}}" data-num-tasks="{{dfd_tasks | length}}">
 </div>
@@ -73,8 +128,38 @@
 
 <script src="https://frogcat.github.io/canvas-arrow/canvas-arrow.js"></script>
 <script>
+    const GRID_SIZE = 16;
+
+    function addContextMenu(element, contextMenuId) {
+        element.oncontextmenu = function () {
+            return false;
+        };
+        element.addEventListener('contextmenu', function (e) {
+            document.getElementById(contextMenuId).style.left = e.pageX + "px";
+            document.getElementById(contextMenuId).style.top = e.pageY + "px";
+            document.getElementById(contextMenuId).style.display = "block";
+            return false;
+        });
+        element.addEventListener('click', function (e) {
+            document.getElementById(contextMenuId).style.display = "none";
+        });
+        element.addEventListener('blur', function (e) {
+            document.getElementById(contextMenuId).style.display = "none";
+        });
+    }
+
+    function drawArrow(canvas, start_x, start_y, target_x, target_y) {
+        const context = canvas.getContext("2d");
+        context.beginPath();
+        context.strokeStyle = "#afa";
+        context.fillStyle = "#afa";
+        context.lineWidth = 0;
+        context.arrow(GRID_SIZE * start_x, GRID_SIZE * start_y, GRID_SIZE * target_x, GRID_SIZE * target_y, [0, 6, -10, 6, -10, 10]);
+        context.fill();
+        context.stroke();
+    }
+
     function initialize() {
-        const GRID_SIZE = 16;
         const numDeliverables = parseInt(document.getElementById("dfd_meta").dataset.numDeliverables);
         const numTasks = parseInt(document.getElementById("dfd_meta").dataset.numTasks);
         function SetPosition(element, w, h, left, top) {
@@ -87,24 +172,26 @@
             const element = document.getElementById(`deliverable_${i + 1}`);
             element.addEventListener('focus', e => { console.log(e); e.target.classList.add('focused'); });
             element.addEventListener('blur', e => { console.log(e); e.target.classList.remove('focused'); });
+            addContextMenu(element, "deliverable_menu");
             SetPosition(element, 8, 2, 0, i * 2);
         }
         for (let i = 0; i < numTasks; i++) {
             const element = document.getElementById(`task_${i + 1}`);
             element.addEventListener('focus', e => { console.log(e); e.target.classList.add('focused'); });
             element.addEventListener('blur', e => { console.log(e); e.target.classList.remove('focused'); });
+            addContextMenu(element, "task_menu");
             SetPosition(element, 8, 2, 12, i * 2);
         }
 
         const canvas = document.getElementById("network");
-        const context = canvas.getContext("2d");
-        context.beginPath();
-        context.strokeStyle = "#f00";
-        context.fillStyle = "#f00";
-        context.lineWidth = 0;
-        context.arrow(GRID_SIZE * 8, GRID_SIZE * 1, GRID_SIZE * 12, GRID_SIZE * 1, [0, 6, -10, 6, -10, 10]);
-        context.fill();
-        context.stroke();
+        addContextMenu(canvas, 'contextmenu');
+        document.getElementById("add_deliverable").addEventListener('click', function (e) {
+            document.getElementById('contextmenu').style.display = "none";
+        });
+        document.getElementById("add_task").addEventListener('click', function (e) {
+            document.getElementById('contextmenu').style.display = "none";
+        });
+        drawArrow(canvas, 8, 1, 12, 1);
     }
     initialize();
 </script>

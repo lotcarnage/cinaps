@@ -1,4 +1,4 @@
-<form class="taskcard" action="/updatetask" method="post">
+<form class="taskeditor" action="/updatetask" method="post">
     <input type="id" name="task_id" value="" hidden>
     <table>
         <tr>
@@ -13,6 +13,14 @@
                     <option value="{{member.id}}">{{ member.display_name }}</option>
                     {% endfor %}
                 </select>
+            </td>
+        </tr>
+        <tr>
+            <th>依存物</th>
+            <td>
+                {% for deliverable in dfd_deliverables %}
+                <input type="checkbox" id="input_deliverable_{{deliverable.id}}"><label for="input_deliverable_{{deliverable.id}}">{{ deliverable.label }}</label>
+                {% endfor %}
             </td>
         </tr>
         <tr>
