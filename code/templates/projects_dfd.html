@@ -17,22 +17,22 @@
         border-radius: 4px;
         background-color: #fff;
         filter: drop-shadow(2px 2px 2px rgba(0.2, 0.2, 0.2, 0.2));
+        display: inline;
         vertical-align: middle;
         position: absolute;
         text-align: center;
-        display: flex;
         align-items: center;
         margin: 0px;
     }
 
     div.dfd_task {
-        border-radius: 4px;
+        border-radius: 8px;
         background-color: #fff;
         filter: drop-shadow(2px 2px 2px rgba(0.2, 0.2, 0.2, 0.2));
+        display: inline;
         vertical-align: middle;
         position: absolute;
         text-align: center;
-        display: flex;
         align-items: center;
         margin: 0px;
     }
@@ -113,22 +113,37 @@
 </div>
 <div id="deliverable_to_task_edges">
     {% for edge in deliverable_to_task_edges %}
-    <span data-edge='{"deliverable_id":{{edge.deliverable_id}}, "task_id":{{edge.task_id}}}'></span>
+    <span data-edge-task-id="{{edge.task_id}}" data-edge-depend-deliverable-id="{{edge.deliverable_id}}"></span>
+    {% endfor %}
+</div>
+<div id="task_list">
+    {% for dfd_task in dfd_tasks %}
+    <span data-task-id="{{dfd_task.id}}" data-task-subject="{{dfd_task.subject}}"></span>
     {% endfor %}
 </div>
 <div class="grapharea">
     <canvas id="network" class="network" width="800px" height="800px"></canvas>
     {% for deliverable in dfd_deliverables %}
-    <div class="dfd_deliverable" id="deliverable_{{deliverable.id}}" tabindex=0><span>成果物：{{deliverable.label}}</span></div>
+    <div class="dfd_deliverable" id="deliverable_{{deliverable.id}}" tabindex=0><span>{{deliverable.label}}</span></div>
     {% endfor %}
     {% for task in dfd_tasks %}
-    <div class="dfd_task" id="task_{{task.id}}" tabindex=0><span>タスク：{{task.subject}}</span></div>
+    <div class="dfd_task" id="task_{{task.id}}" tabindex=0><span>{{task.subject}}</span></div>
     {% endfor %}
 </div>
 
 <script src="https://frogcat.github.io/canvas-arrow/canvas-arrow.js"></script>
 <script>
     const GRID_SIZE = 16;
+    const task_list = {};
+
+    class Task {
+        constructor(id, subject) {
+            this.id = id;
+            this.subject = subject;
+            this.depends = [];
+        }
+
+    }
 
     function addContextMenu(element, contextMenuId) {
         element.oncontextmenu = function () {
@@ -147,6 +162,10 @@
             document.getElementById(contextMenuId).style.display = "none";
         });
     }
+    function setTask(task_id) {
+        document.getElementById('task_id').value = task_id;
+        document.getElementById('task_subject').value = task_list[task_id].subject;
+    }
 
     function drawArrow(canvas, start_x, start_y, target_x, target_y) {
         const context = canvas.getContext("2d");
@@ -162,6 +181,21 @@
     function initialize() {
         const numDeliverables = parseInt(document.getElementById("dfd_meta").dataset.numDeliverables);
         const numTasks = parseInt(document.getElementById("dfd_meta").dataset.numTasks);
+        tasks = document.getElementById("task_list").children
+        for (let i = 0; i < tasks.length; i++) {
+            const taskId = tasks[i].dataset.taskId;
+            task = new Task(taskId, tasks[i].dataset.taskSubject)
+            edges = document.getElementById("deliverable_to_task_edges").children
+            for (let j = 0; j < edges.length; j++) {
+                if (parseInt(taskId) == parseInt(edges[j].dataset.edgeTaskId)) {
+                    console.log(task, edges[j].dataset.edgeTaskId);
+                    task.depends.push(edges[j].dataset.edgeDependDeliverableId);
+                }
+            }
+
+            task_list[taskId] = task;
+        }
+        console.log(task_list)
         function SetPosition(element, w, h, left, top) {
             element.style.left = (GRID_SIZE * left + 1).toString() + 'px';
             element.style.top = (GRID_SIZE * top + 1).toString() + 'px';
@@ -170,17 +204,19 @@
         }
         for (let i = 0; i < numDeliverables; i++) {
             const element = document.getElementById(`deliverable_${i + 1}`);
-            element.addEventListener('focus', e => { console.log(e); e.target.classList.add('focused'); });
-            element.addEventListener('blur', e => { console.log(e); e.target.classList.remove('focused'); });
+            element.addEventListener('focus', e => { e.target.classList.add('focused'); });
+            element.addEventListener('blur', e => { e.target.classList.remove('focused'); });
             addContextMenu(element, "deliverable_menu");
             SetPosition(element, 8, 2, 0, i * 2);
         }
-        for (let i = 0; i < numTasks; i++) {
-            const element = document.getElementById(`task_${i + 1}`);
-            element.addEventListener('focus', e => { console.log(e); e.target.classList.add('focused'); });
-            element.addEventListener('blur', e => { console.log(e); e.target.classList.remove('focused'); });
+        let i = 0;
+        for (let task_id in task_list) {
+            const element = document.getElementById(`task_${task_id}`);
+            element.addEventListener('focus', e => { e.target.classList.add('focused'); setTask(task_id); });
+            element.addEventListener('blur', e => { e.target.classList.remove('focused'); });
             addContextMenu(element, "task_menu");
             SetPosition(element, 8, 2, 12, i * 2);
+            i++;
         }
 
         const canvas = document.getElementById("network");

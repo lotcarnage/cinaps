@@ -1,9 +1,10 @@
 <form class="taskeditor" action="/updatetask" method="post">
-    <input type="id" name="task_id" value="" hidden>
+    <input type="text" id="task_id" name="task_id" value="" hidden>
+    <input type="text" id="depends" name="depends" value="" hidden>
     <table>
         <tr>
             <th>タスク名</th>
-            <td><input type="text" name="subject" value=""></td>
+            <td><input type="text" id="task_subject" name="subject" value=""></td>
         </tr>
         <tr>
             <th>作業者</th>
