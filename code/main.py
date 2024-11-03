@@ -113,11 +113,8 @@ def projects_dfd():
     task_input_deliverables = cinaps.GetAllTaskInputDeliverable()
     dfd_tasks = [cinaps_dfd.DfdTask(task, task_input_deliverables) for task in tasks]
     dfd_deliverables = [cinaps_dfd.DfdDeliverable(deliverable) for deliverable in deliverables]
-    task_to_deliverable_edges: list[cinaps_dfd.DfdTaskToDeliverable] = []
-    for dfd_task in dfd_tasks:
-        edges = [cinaps_dfd.DfdTaskToDeliverable(dfd_task.id, deliverable_id) for deliverable_id in dfd_task.depend_deliverable_ids]
-        task_to_deliverable_edges.extend(edges)
-    deliverable_to_task_edges = [cinaps_dfd.DfdTaskToDeliverable(dfd_deliverable.id, dfd_deliverable.production_task_id) for dfd_deliverable in dfd_deliverables]
+    deliverable_to_task_edges = [cinaps_dfd.DfdDeliverableToTask(task_input_deliverable.deliverable_id, task_input_deliverable.task_id) for task_input_deliverable in task_input_deliverables]
+    task_to_deliverable_edges = [cinaps_dfd.DfdTaskToDeliverable(dfd_deliverable.id, dfd_deliverable.production_task_id) for dfd_deliverable in dfd_deliverables]
     projects = Project.query.all()
     members = Member.query.all()
     for project in projects:
@@ -210,6 +207,28 @@ def updatetask():
     task.man_minute = man_minute
     db.session.commit()
     return flask.redirect('/home')
+
+
+@app.route('/updatetaskdepend', methods=['post'])
+def updatetaskdepend():
+    task_id = flask.request.form.get('task_id')
+    subject = flask.request.form.get('subject')
+    description = flask.request.form.get('description')
+    asigned_member_id = flask.request.form.get('asigned_member_id')
+    state = flask.request.form.get('state')
+    depends = flask.request.form.get('depends')
+    print(depends, task_id, subject)
+    depends = depends.rstrip(',').split(',')
+    print(depends)
+    task = cinaps.FindTaskById(int(task_id))
+    task.subject = subject
+    task.description = description
+    task.asigned_member_id = asigned_member_id
+    task.state = state
+    for depend_deliverable_id in depends:
+        cinaps.AddTaskInputDeliverable(task_id, depend_deliverable_id)
+    db.session.commit()
+    return flask.redirect('/projects_dfd')
 
 
 @app.route('/calendar', methods=['get'])

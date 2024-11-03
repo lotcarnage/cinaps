@@ -77,9 +77,41 @@
 {% block body %}
 <p><a href="/home">Home</a></p>
 
-
-{% include 'taskeditor.html' %}
-
+<div>
+    <form id="task_editor" class="taskeditor" action="/updatetaskdepend" method="post">
+        <input type="text" id="task_id" name="task_id" value="" hidden>
+        <input type="text" id="depends" name="depends" value="" hidden>
+        <table>
+            <tr>
+                <th>タスク名</th>
+                <td><input type="text" id="task_subject" name="subject" value=""></td>
+            </tr>
+            <tr>
+                <th>作業者</th>
+                <td> <select name="asigned_member_id" size="1">
+                        <option value="" selected>未割り当て</option>
+                        {% for member in members %}
+                        <option value="{{member.id}}">{{ member.display_name }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <th>依存物</th>
+                <td>
+                    {% for deliverable in dfd_deliverables %}
+                    <input type="checkbox" id="input_deliverable_{{deliverable.id}}"><label for="input_deliverable_{{deliverable.id}}">{{ deliverable.label }}</label>
+                    {% endfor %}
+                </td>
+            </tr>
+            <tr>
+                <th>説明</th>
+                <td><input type="text" name="description" value=""></td>
+            </tr>
+        </table>
+        <button id="updatetask" type="button" onclick="submitTask()">更新</button>
+    </form>
+</div>
 <div id="contextmenu" class="contextmenu">
     <ul>
         <li id="add_deliverable">+成果物追加</li>
@@ -116,6 +148,11 @@
     <span data-edge-task-id="{{edge.task_id}}" data-edge-depend-deliverable-id="{{edge.deliverable_id}}"></span>
     {% endfor %}
 </div>
+<div id="deliverable_list">
+    {% for dfd_deliverable in dfd_deliverables %}
+    <span data-deliverable-id="{{dfd_deliverable.id}}" data-deliverable-label="{{dfd_deliverable.label}}"></span>
+    {% endfor %}
+</div>
 <div id="task_list">
     {% for dfd_task in dfd_tasks %}
     <span data-task-id="{{dfd_task.id}}" data-task-subject="{{dfd_task.subject}}"></span>
@@ -135,15 +172,24 @@
 <script>
     const GRID_SIZE = 16;
     const task_list = {};
+    const deliverable_list = {};
 
     class Task {
         constructor(id, subject) {
             this.id = id;
             this.subject = subject;
-            this.depends = [];
+            this.depends = new Set();
         }
-
     }
+
+    class Deliverable {
+        constructor(id, label) {
+            this.id = id;
+            this.label = label;
+            this.producer_id = null;
+        }
+    }
+
 
     function addContextMenu(element, contextMenuId) {
         element.oncontextmenu = function () {
@@ -165,6 +211,23 @@
     function setTask(task_id) {
         document.getElementById('task_id').value = task_id;
         document.getElementById('task_subject').value = task_list[task_id].subject;
+        for (let deliverable_id in deliverable_list) {
+            document.getElementById(`input_deliverable_${deliverable_id}`).checked = task_list[task_id].depends.has(deliverable_id);
+        }
+    }
+    function submitTask() {
+        const dependDeliverableIds = new Set();
+        for (let deliverable_id in deliverable_list) {
+            if (document.getElementById(`input_deliverable_${deliverable_id}`).checked) {
+                dependDeliverableIds.add(deliverable_id);
+            }
+        }
+        let deliverable_id_record = "";
+        for (let deliverable_id of dependDeliverableIds) {
+            deliverable_id_record += deliverable_id + ",";
+        }
+        document.getElementById("depends").value = deliverable_id_record;
+        document.getElementById("task_editor").submit();
     }
 
     function drawArrow(canvas, start_x, start_y, target_x, target_y) {
@@ -188,14 +251,17 @@
             edges = document.getElementById("deliverable_to_task_edges").children
             for (let j = 0; j < edges.length; j++) {
                 if (parseInt(taskId) == parseInt(edges[j].dataset.edgeTaskId)) {
-                    console.log(task, edges[j].dataset.edgeTaskId);
-                    task.depends.push(edges[j].dataset.edgeDependDeliverableId);
+                    task.depends.add(edges[j].dataset.edgeDependDeliverableId);
                 }
             }
-
             task_list[taskId] = task;
         }
-        console.log(task_list)
+        deliverables = document.getElementById("deliverable_list").children
+        for (let i = 0; i < deliverables.length; i++) {
+            const deliverableId = deliverables[i].dataset.deliverableId;
+            deliverable = new Deliverable(deliverableId, deliverables[i].dataset.deliverableLabel)
+            deliverable_list[deliverableId] = deliverable;
+        }
         function SetPosition(element, w, h, left, top) {
             element.style.left = (GRID_SIZE * left + 1).toString() + 'px';
             element.style.top = (GRID_SIZE * top + 1).toString() + 'px';

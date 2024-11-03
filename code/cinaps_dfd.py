@@ -23,14 +23,20 @@ class DfdTask:
 
 
 class DfdTaskToDeliverable:
-    def __init__(self, task_id: int, delivarable_id: int) -> None:
+    def __init__(self, task_id: int, deliverable_id: int) -> None:
         self.task_id = task_id
-        self.delivarable_id = delivarable_id
+        self.deliverable_id = deliverable_id
         return None
+
+    def __repr__(self):
+        return f'{self.task_id}_{self.deliverable_id}'
 
 
 class DfdDeliverableToTask:
-    def __init__(self, delivarable_id: int, task_id: int) -> None:
-        self.delivarable_id = delivarable_id
+    def __init__(self, deliverable_id: int, task_id: int) -> None:
+        self.deliverable_id = deliverable_id
         self.task_id = task_id
         return None
+
+    def __repr__(self):
+        return f'{self.task_id}_{self.deliverable_id}'
