@@ -65,6 +65,10 @@ class CinapsCore:
         task = Task.query.filter_by(id=int(task_id)).first()
         return task
 
+    def FindDeliverableById(self, deliverable_id: int) -> Deliverable | None:
+        deliverable = Deliverable.query.filter_by(id=int(deliverable_id)).first()
+        return deliverable
+
     def GetAllTask(self) -> list[Task]:
         return Task.query.all()
 

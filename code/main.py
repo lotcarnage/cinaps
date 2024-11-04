@@ -231,6 +231,20 @@ def updatetaskdepend():
     return flask.redirect('/projects_dfd')
 
 
+@app.route('/updatedeliverable', methods=['post'])
+def updatedeliverable():
+    deliverable_id = flask.request.form.get('deliverable_id')
+    deliverable_label = flask.request.form.get('deliverable_label')
+    producer_task_id = flask.request.form.get('producer_task_id')
+    description = flask.request.form.get('description')
+    deliverable = cinaps.FindDeliverableById(int(deliverable_id))
+    deliverable.label = deliverable_label
+    deliverable.description = description
+    deliverable.production_task_id = producer_task_id
+    db.session.commit()
+    return flask.redirect('/projects_dfd')
+
+
 @app.route('/calendar', methods=['get'])
 def calendar():
     session_id = flask.request.cookies.get('session_id')

@@ -112,6 +112,33 @@
         <button id="updatetask" type="button" onclick="submitTask()">更新</button>
     </form>
 </div>
+<div>
+    <form id="deliverable_editor" class="deliverableeditor" action="/updatedeliverable" method="post">
+        <input type="text" id="deliverable_id" name="deliverable_id" value="" hidden>
+        <table>
+            <tr>
+                <th>成果物名</th>
+                <td><input type="text" id="deliverable_label" name="deliverable_label" value=""></td>
+            </tr>
+            <tr>
+                <th>生成タスク</th>
+                <td> <select name="producer_task_id" size="1">
+                        <option id="priducer_task_None" value="None" selected>未割り当て</option>
+                        {% for dfd_task in dfd_tasks %}
+                        <option id="priducer_task_{{dfd_task.id}}" value="{{dfd_task.id}}">{{ dfd_task.subject }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <th>説明</th>
+                <td><input type="text" name="description" value=""></td>
+            </tr>
+        </table>
+        <button id="updatedeliverable" type="button" onclick="submitDeliverable()">更新</button>
+    </form>
+</div>
+
 <div id="contextmenu" class="contextmenu">
     <ul>
         <li id="add_deliverable">+成果物追加</li>
@@ -150,7 +177,7 @@
 </div>
 <div id="deliverable_list">
     {% for dfd_deliverable in dfd_deliverables %}
-    <span data-deliverable-id="{{dfd_deliverable.id}}" data-deliverable-label="{{dfd_deliverable.label}}"></span>
+    <span data-deliverable-id="{{dfd_deliverable.id}}" data-deliverable-label="{{dfd_deliverable.label}}" data-deliverable-production-task-id="{{dfd_deliverable.production_task_id}}"></span>
     {% endfor %}
 </div>
 <div id="task_list">
@@ -183,10 +210,10 @@
     }
 
     class Deliverable {
-        constructor(id, label) {
+        constructor(id, label, producer_id) {
             this.id = id;
             this.label = label;
-            this.producer_id = null;
+            this.producer_id = producer_id;
         }
     }
 
@@ -229,6 +256,17 @@
         document.getElementById("depends").value = deliverable_id_record;
         document.getElementById("task_editor").submit();
     }
+    function setDeliverable(deliverable_id) {
+        const deliverable = deliverable_list[deliverable_id];
+        console.log(deliverable.producer_id);
+        document.getElementById('deliverable_id').value = deliverable.id;
+        document.getElementById('deliverable_label').value = deliverable.label;
+        document.getElementById(`priducer_task_${deliverable.producer_id}`).selected = true;
+    }
+
+    function submitDeliverable() {
+        document.getElementById("deliverable_editor").submit();
+    }
 
     function drawArrow(canvas, start_x, start_y, target_x, target_y) {
         const context = canvas.getContext("2d");
@@ -259,7 +297,7 @@
         deliverables = document.getElementById("deliverable_list").children
         for (let i = 0; i < deliverables.length; i++) {
             const deliverableId = deliverables[i].dataset.deliverableId;
-            deliverable = new Deliverable(deliverableId, deliverables[i].dataset.deliverableLabel)
+            deliverable = new Deliverable(deliverableId, deliverables[i].dataset.deliverableLabel, deliverables[i].dataset.deliverableProductionTaskId)
             deliverable_list[deliverableId] = deliverable;
         }
         function SetPosition(element, w, h, left, top) {
@@ -268,14 +306,16 @@
             element.style.width = (GRID_SIZE * w - 2).toString() + 'px';
             element.style.height = (GRID_SIZE * h - 2).toString() + 'px';
         }
-        for (let i = 0; i < numDeliverables; i++) {
-            const element = document.getElementById(`deliverable_${i + 1}`);
-            element.addEventListener('focus', e => { e.target.classList.add('focused'); });
+        let i = 0;
+        for (let deliverable_id in deliverable_list) {
+            const element = document.getElementById(`deliverable_${deliverable_id}`);
+            element.addEventListener('focus', e => { e.target.classList.add('focused'); setDeliverable(deliverable_id); });
             element.addEventListener('blur', e => { e.target.classList.remove('focused'); });
             addContextMenu(element, "deliverable_menu");
             SetPosition(element, 8, 2, 0, i * 2);
+            i++;
         }
-        let i = 0;
+        i = 0;
         for (let task_id in task_list) {
             const element = document.getElementById(`task_${task_id}`);
             element.addEventListener('focus', e => { e.target.classList.add('focused'); setTask(task_id); });
