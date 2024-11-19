@@ -89,9 +89,9 @@
             <tr>
                 <th>作業者</th>
                 <td> <select name="asigned_member_id" size="1">
-                        <option value="" selected>未割り当て</option>
+                        <option id="assign_None" value="None" selected>未割り当て</option>
                         {% for member in members %}
-                        <option value="{{member.id}}">{{ member.display_name }}</option>
+                        <option id="assign_{{member.id}}" value="{{member.id}}">{{ member.display_name }}</option>
                         {% endfor %}
                     </select>
                 </td>
@@ -182,7 +182,7 @@
 </div>
 <div id="task_list">
     {% for dfd_task in dfd_tasks %}
-    <span data-task-id="{{dfd_task.id}}" data-task-subject="{{dfd_task.subject}}"></span>
+    <span data-task-id="{{dfd_task.id}}" data-task-subject="{{dfd_task.subject}}" data-task-assigned-member-id="{{dfd_task.assigned_member_id}}"></span>
     {% endfor %}
 </div>
 <div class="grapharea">
@@ -202,9 +202,10 @@
     const deliverable_list = {};
 
     class Task {
-        constructor(id, subject) {
+        constructor(id, subject, assgned_member_id) {
             this.id = id;
             this.subject = subject;
+            this.assgned_member_id = assgned_member_id;
             this.depends = new Set();
         }
     }
@@ -237,10 +238,12 @@
     }
     function setTask(task_id) {
         document.getElementById('task_id').value = task_id;
-        document.getElementById('task_subject').value = task_list[task_id].subject;
+        const task = task_list[task_id];
+        document.getElementById('task_subject').value = task.subject;
         for (let deliverable_id in deliverable_list) {
-            document.getElementById(`input_deliverable_${deliverable_id}`).checked = task_list[task_id].depends.has(deliverable_id);
+            document.getElementById(`input_deliverable_${deliverable_id}`).checked = task.depends.has(deliverable_id);
         }
+        document.getElementById(`assign_${task.assgned_member_id}`).selected = true;
     }
     function submitTask() {
         const dependDeliverableIds = new Set();
@@ -285,7 +288,7 @@
         tasks = document.getElementById("task_list").children
         for (let i = 0; i < tasks.length; i++) {
             const taskId = tasks[i].dataset.taskId;
-            task = new Task(taskId, tasks[i].dataset.taskSubject)
+            task = new Task(taskId, tasks[i].dataset.taskSubject, tasks[i].dataset.taskAssignedMemberId);
             edges = document.getElementById("deliverable_to_task_edges").children
             for (let j = 0; j < edges.length; j++) {
                 if (parseInt(taskId) == parseInt(edges[j].dataset.edgeTaskId)) {
