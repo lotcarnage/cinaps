@@ -16,7 +16,7 @@ class DfdTask:
     def __init__(self, task: Task, task_input_deliverables: list[TaskInputDeliverable]) -> None:
         self.id = task.id
         self.parent_project_id = task.parent_project_id
-        self.assigned_member_id = task.asigned_member_id
+        self.assigned_member_id = task.assigned_member_id
         self.subject = task.subject
         self.depend_deliverable_ids = [deliverable for deliverable in task_input_deliverables if deliverable.task_id == task.id]
         return None

@@ -88,7 +88,7 @@
             </tr>
             <tr>
                 <th>作業者</th>
-                <td> <select name="asigned_member_id" size="1">
+                <td> <select name="assigned_member_id" size="1">
                         <option id="assign_None" value="None" selected>未割り当て</option>
                         {% for member in members %}
                         <option id="assign_{{member.id}}" value="{{member.id}}">{{ member.display_name }}</option>

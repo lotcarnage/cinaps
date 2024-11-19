@@ -43,7 +43,7 @@ class CinapsCore:
         return None
 
     def AddTask(self, subject: str, description: str | None, parent_project_id: int, assigned_member_id: int | None) -> None:
-        new_task = Task(subject=subject, description=description, parent_project_id=parent_project_id, asigned_member_id=assigned_member_id)
+        new_task = Task(subject=subject, description=description, parent_project_id=parent_project_id, assigned_member_id=assigned_member_id)
         self.__db.session.add(new_task)
         return None
 

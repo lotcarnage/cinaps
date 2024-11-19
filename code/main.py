@@ -42,10 +42,10 @@ def _load_tasks():
             task_progress_time_dict[work.task_id] += work.span_minute
         task_sheduled_time_dict[work.task_id] += work.span_minute
     for task in tasks:
-        if task.asigned_member_id in member_dict:
-            task.asigned_member_name = member_dict[task.asigned_member_id].display_name
+        if task.assigned_member_id in member_dict:
+            task.assigned_member_name = member_dict[task.assigned_member_id].display_name
         else:
-            task.asigned_member_name = '未割り当て'
+            task.assigned_member_name = '未割り当て'
         task.sheduled_time = task_sheduled_time_dict[task.id]
         task.progress_time = task_progress_time_dict[task.id]
         man_minute = 0 if task.man_minute is None else task.man_minute
@@ -57,7 +57,7 @@ def _load_tasks():
 
 
 def _find_member_by_task(task):
-    member = Member.query.filter_by(id=task.asigned_member_id).first()
+    member = Member.query.filter_by(id=task.assigned_member_id).first()
     return member
 
 
@@ -90,9 +90,9 @@ def home():
     member = cinaps.FindMemberById(member_id)
     projects = Project.query.all()
     tasks = _load_tasks()
-    my_asigned_tasks = [task for task in tasks if task.asigned_member_id == member.id]
+    my_assigned_tasks = [task for task in tasks if task.assigned_member_id == member.id]
     members = Member.query.all()
-    return flask.render_template('home.html', member=member, projects=projects, tasks=my_asigned_tasks, members=members)
+    return flask.render_template('home.html', member=member, projects=projects, tasks=my_assigned_tasks, members=members)
 
 
 @app.route('/projects', methods=['get'])
@@ -165,8 +165,8 @@ def addtask():
     project_id = flask.request.form.get('project_id')
     subject = flask.request.form.get('subject')
     description = flask.request.form.get('description')
-    asigned_member_id = flask.request.form.get('asigned_member_id')
-    cinaps.AddTask(subject, description, project_id, asigned_member_id)
+    assigned_member_id = flask.request.form.get('assigned_member_id')
+    cinaps.AddTask(subject, description, project_id, assigned_member_id)
     db.session.commit()
     return flask.redirect(f'/projectedit?id={project_id}')
 
@@ -186,7 +186,7 @@ def updatetask():
     task_id = flask.request.form.get('task_id')
     subject = flask.request.form.get('subject')
     description = flask.request.form.get('description')
-    asigned_member_id = flask.request.form.get('asigned_member_id')
+    assigned_member_id = flask.request.form.get('assigned_member_id')
     reviewer_id = flask.request.form.get('reviewer_id')
     state = flask.request.form.get('state')
     limit_datetime = flask.request.form.get('limit_datetime')
@@ -200,7 +200,7 @@ def updatetask():
     task = cinaps.FindTaskById(int(task_id))
     task.subject = subject
     task.description = description
-    task.asigned_member_id = asigned_member_id
+    task.assigned_member_id = assigned_member_id
     task.reviewer_id = reviewer_id
     task.state = state
     task.limit_datetime = _date_str_to_datetime(limit_datetime)
@@ -214,7 +214,7 @@ def updatetaskdepend():
     task_id = flask.request.form.get('task_id')
     subject = flask.request.form.get('subject')
     description = flask.request.form.get('description')
-    asigned_member_id = flask.request.form.get('asigned_member_id')
+    assigned_member_id = flask.request.form.get('assigned_member_id')
     state = flask.request.form.get('state')
     depends = flask.request.form.get('depends')
     print(depends, task_id, subject)
@@ -223,7 +223,7 @@ def updatetaskdepend():
     task = cinaps.FindTaskById(int(task_id))
     task.subject = subject
     task.description = description
-    task.asigned_member_id = asigned_member_id
+    task.assigned_member_id = assigned_member_id
     task.state = state
     for depend_deliverable_id in depends:
         cinaps.AddTaskInputDeliverable(task_id, depend_deliverable_id)
@@ -268,7 +268,7 @@ def calendar():
         work.start_time = _extract_time_str(work.start_datetime)
         work.end_time = _extract_time_str(work.start_datetime + datetime.timedelta(minutes=work.span_minute))
     works = sorted(works, key=lambda x: x.start_time)
-    my_tasks = [task for task in tasks if task.asigned_member_id == member.id]
+    my_tasks = [task for task in tasks if task.assigned_member_id == member.id]
     return flask.render_template('calendar.html', tasks=my_tasks, works=works, date=_extract_date_str(target_day))
 
 
@@ -284,7 +284,7 @@ def addwork():
     s_d = datetime.datetime(year=d.year, month=d.month, day=d.day, hour=s.hour, minute=s.minute)
     span_minute = (e - s).total_seconds() // 60
     task = Task.query.filter_by(id=task_id).first()
-    new_work = Work(task_id=task_id, member_id=task.asigned_member_id, start_datetime=s_d, span_minute=span_minute)
+    new_work = Work(task_id=task_id, member_id=task.assigned_member_id, start_datetime=s_d, span_minute=span_minute)
     db.session.add(new_work)
     db.session.commit()
     print(start_date)

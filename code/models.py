@@ -51,7 +51,7 @@ class Project(Base):
 class Task(Base):
     __tablename__ = 'tasks'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    asigned_member_id = db.Column(db.Integer)
+    assigned_member_id = db.Column(db.Integer)
     reviewer_id = db.Column(db.Integer)
     parent_project_id = db.Column(db.Integer)
     subject = db.Column(db.String(50))

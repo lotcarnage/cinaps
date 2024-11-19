@@ -14,10 +14,10 @@
                 <p>タスク名:<input type="text" name="subject" value="{{task.subject}}"></p>
                 <p>説明:<input type="text" name="description" value="{{task.description}}"></p>
                 <p>作業者:
-                    <select name="asigned_member_id" size="1">
+                    <select name="assigned_member_id" size="1">
                         <option value="" selected>未割り当て</option>
                         {% for member in members %}
-                        {% if task.asigned_member_id == member.id %}
+                        {% if task.assigned_member_id == member.id %}
                         <option value="{{member.id}}" selected>{{ member.display_name }}</option>
                         {% else %}
                         <option value="{{member.id}}">{{ member.display_name }}</option>
@@ -29,7 +29,7 @@
                     <select name="reviewer_id" size="1">
                         <option value="" selected>未割り当て</option>
                         {% for member in members %}
-                        {% if task.asigned_member_id == member.id %}
+                        {% if task.assigned_member_id == member.id %}
                         <option value="{{member.id}}" selected>{{ member.display_name }}</option>
                         {% else %}
                         <option value="{{member.id}}">{{ member.display_name }}</option>
@@ -44,7 +44,7 @@
                 <button id="updatetask" type="submit">更新</button>
             </form>
         </details>
-        <p>{{ task.asigned_member_name }}</p>
+        <p>{{ task.assigned_member_name }}</p>
     </div>
     {% endfor %}
 </div>
