@@ -53,8 +53,10 @@ class CinapsCore:
         return None
 
     def AddTaskInputDeliverable(self, task_id: int, deliverable_id: id) -> None:
-        new_task_inout_deliverable = TaskInputDeliverable(task_id=task_id, deliverable_id=deliverable_id)
-        self.__db.session.add(new_task_inout_deliverable)
+        exists = TaskInputDeliverable.query.filter_by(task_id=task_id, deliverable_id=deliverable_id)
+        if exists is None:
+            new_task_inout_deliverable = TaskInputDeliverable(task_id=task_id, deliverable_id=deliverable_id)
+            self.__db.session.add(new_task_inout_deliverable)
         return None
 
     def FindMemberById(self, member_id: int) -> Member | None:
