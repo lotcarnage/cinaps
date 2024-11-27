@@ -13,31 +13,45 @@
         background-color: #444;
     }
 
-    div.dfd_deliverable {
+    div.CinapsDeliverableNode {
         border-radius: 4px;
         background-color: #fff;
         filter: drop-shadow(2px 2px 2px rgba(0.2, 0.2, 0.2, 0.2));
-        display: inline;
-        vertical-align: middle;
         position: absolute;
-        text-align: center;
+        display: flex;
         align-items: center;
+        justify-content: center;
         margin: 0px;
     }
 
-    div.dfd_task {
-        border-radius: 8px;
+    div.CinapsTaskNode {
         background-color: #fff;
         filter: drop-shadow(2px 2px 2px rgba(0.2, 0.2, 0.2, 0.2));
-        display: inline;
-        vertical-align: middle;
         position: absolute;
-        text-align: center;
+        display: flex;
         align-items: center;
+        justify-content: center;
         margin: 0px;
     }
 
-    div.focused {
+    div.CinapsMemberIcon {
+        width: 2rem;
+        height: 2rem;
+        border: solid 2px orange;
+        border-radius: 1rem;
+        background-color: #fff;
+        position: absolute;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0px;
+    }
+
+    div.CinapsDeliverableNode.focused {
+        background-color: orange;
+    }
+
+    div.CinapsTaskNode.focused {
         background-color: aquamarine;
     }
 
@@ -185,19 +199,14 @@
     <span data-task-id="{{dfd_task.id}}" data-task-subject="{{dfd_task.subject}}" data-task-assigned-member-id="{{dfd_task.assigned_member_id}}"></span>
     {% endfor %}
 </div>
-<div class="grapharea">
+<div class="grapharea" id="grapharea">
     <canvas id="network" class="network" width="800px" height="800px"></canvas>
-    {% for deliverable in dfd_deliverables %}
-    <div class="dfd_deliverable" id="deliverable_{{deliverable.id}}" tabindex=0><span>{{deliverable.label}}</span></div>
-    {% endfor %}
-    {% for task in dfd_tasks %}
-    <div class="dfd_task" id="task_{{task.id}}" tabindex=0><span>{{task.subject}}</span></div>
-    {% endfor %}
 </div>
 
 <script src="https://frogcat.github.io/canvas-arrow/canvas-arrow.js"></script>
+<script type="text/javascript" src="/static/js/graph.js"></script>
 <script>
-    const GRID_SIZE = 16;
+    const GRID_SIZE = 32;
     const task_list = {};
     const deliverable_list = {};
 
@@ -309,22 +318,23 @@
             element.style.width = (GRID_SIZE * w - 2).toString() + 'px';
             element.style.height = (GRID_SIZE * h - 2).toString() + 'px';
         }
+        const parent = document.getElementById("grapharea");
         let i = 0;
         for (let deliverable_id in deliverable_list) {
-            const element = document.getElementById(`deliverable_${deliverable_id}`);
-            element.addEventListener('focus', e => { e.target.classList.add('focused'); setDeliverable(deliverable_id); });
-            element.addEventListener('blur', e => { e.target.classList.remove('focused'); });
-            addContextMenu(element, "deliverable_menu");
-            SetPosition(element, 8, 2, 0, i * 2);
+            const deliverable = deliverable_list[deliverable_id];
+            const deliverable_node = new CinapsDeliverableNode(parent, `deliverable_${deliverable_id}`, deliverable.label, 0, GRID_SIZE * i, GRID_SIZE * 4, GRID_SIZE);
+            deliverable_node.GetElement().addEventListener('focus', e => { e.target.classList.add('focused'); setDeliverable(deliverable_id); });
+            deliverable_node.GetElement().addEventListener('blur', e => { e.target.classList.remove('focused'); });
+            addContextMenu(deliverable_node.GetElement(), "deliverable_menu");
             i++;
         }
         i = 0;
         for (let task_id in task_list) {
-            const element = document.getElementById(`task_${task_id}`);
-            element.addEventListener('focus', e => { e.target.classList.add('focused'); setTask(task_id); });
-            element.addEventListener('blur', e => { e.target.classList.remove('focused'); });
-            addContextMenu(element, "task_menu");
-            SetPosition(element, 8, 2, 12, i * 2);
+            const task = task_list[task_id];
+            const task_node = new CinapsTaskNode(parent, `task_${task_id}`, task.subject, GRID_SIZE * 12, GRID_SIZE * i, GRID_SIZE * 4, GRID_SIZE, null);
+            task_node.GetElement().addEventListener('focus', e => { e.target.classList.add('focused'); setTask(task_id); });
+            task_node.GetElement().addEventListener('blur', e => { e.target.classList.remove('focused'); });
+            addContextMenu(task_node.GetElement(), "task_menu");
             i++;
         }
 
